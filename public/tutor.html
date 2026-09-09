@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vertex AI Tutor - VertexLearn AI</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+  <!-- Navigation Bar -->
+  <header class="navbar">
+    <div class="container nav-container">
+      <a href="/" class="nav-brand">
+        <span>🎓</span>
+        <span>VertexLearn</span>
+        <span class="brand-badge">AI</span>
+      </a>
+
+      <button class="mobile-menu-btn" aria-label="Toggle Navigation">☰</button>
+
+      <ul class="nav-links">
+        <li><a href="/dashboard.html">Dashboard</a></li>
+        <li><a href="/courses.html">Courses</a></li>
+        <li><a href="/tutor.html" class="active">AI Tutor</a></li>
+        <li><a href="/study-tools.html">Study Tools</a></li>
+      </ul>
+
+      <div class="nav-actions">
+        <!-- Injected by main.js -->
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Chat Container -->
+  <main class="container" style="flex: 1; display: flex; flex-direction: column;">
+    
+    <div class="tutor-container">
+      <!-- Header -->
+      <div class="tutor-header">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <div style="width: 40px; height: 40px; border-radius: var(--radius-full); background: linear-gradient(135deg, var(--accent-ai), var(--primary)); display: flex; align-items: center; justify-content: center; font-size: 20px; color: white;">
+            🤖
+          </div>
+          <div>
+            <h2 style="font-size: 18px; font-weight: 700; color: var(--text-main); margin: 0;">Vertex AI Tutor</h2>
+            <div class="tutor-status">
+              <span class="status-dot"></span>
+              <span>Online &amp; Ready to Help</span>
+            </div>
+          </div>
+        </div>
+
+        <button id="clearChatBtn" class="btn btn-outline btn-sm" title="Clear conversation history">
+          Clear Chat
+        </button>
+      </div>
+
+      <!-- Messages Area -->
+      <div id="messagesContainer" class="tutor-messages">
+        <!-- Welcome Bot Message -->
+        <div class="message bot">
+          <div class="message-avatar">🤖</div>
+          <div class="message-bubble">
+            <p><strong>Hello there! I'm your Vertex AI Tutor.</strong></p>
+            <p style="margin-top: 6px;">
+              Ask me anything about HTML, CSS, JavaScript, Node.js, Express, MongoDB, or Web Development in general. I can explain confusing concepts, provide clean code examples, and help debug errors!
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Prompt Chips -->
+      <div class="tutor-quick-chips">
+        <button class="chip prompt-chip" data-prompt="What is a JavaScript function and how do I use it?">Functions in JS</button>
+        <button class="chip prompt-chip" data-prompt="Explain the difference between let, const, and var in simple terms.">let vs const vs var</button>
+        <button class="chip prompt-chip" data-prompt="How does CSS Flexbox work? Give a simple example.">CSS Flexbox</button>
+        <button class="chip prompt-chip" data-prompt="What is a MongoDB document and collection?">MongoDB Basics</button>
+        <button class="chip prompt-chip" data-prompt="How does async/await work in Node.js?">Async/Await</button>
+      </div>
+
+      <!-- Input Bar -->
+      <form id="chatForm" class="tutor-input-area">
+        <input 
+          type="text" 
+          id="userInput" 
+          class="form-control" 
+          placeholder="Type your coding question here (e.g., 'What is a closure?')..." 
+          autocomplete="off"
+          required
+        >
+        <button type="submit" id="sendBtn" class="btn btn-ai" style="padding-left: 20px; padding-right: 20px;">
+          <span>Send</span>
+          <span>➤</span>
+        </button>
+      </form>
+    </div>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <p>VertexLearn AI &copy; 2026 &mdash; Built with HTML, CSS, JavaScript, Express &amp; MongoDB</p>
+    </div>
+  </footer>
+
+  <script src="/js/auth.js"></script>
+  <script src="/js/main.js"></script>
+  <script>
+    // Chat logic
+    const messagesContainer = document.getElementById('messagesContainer');
+    const chatForm = document.getElementById('chatForm');
+    const userInput = document.getElementById('userInput');
+    const sendBtn = document.getElementById('sendBtn');
+    const clearChatBtn = document.getElementById('clearChatBtn');
+
+    // Conversation history for multi-turn Gemini reasoning
+    let conversationHistory = [];
+
+    // Pre-populate question if passed in query string (e.g. from Course viewer or Quiz review)
+    document.addEventListener('DOMContentLoaded', () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const initialQuestion = urlParams.get('question');
+      if (initialQuestion) {
+        userInput.value = initialQuestion;
+        sendMessage(initialQuestion);
+      }
+    });
+
+    // Quick chips click
+    document.querySelectorAll('.prompt-chip').forEach(chip => {
+      chip.addEventListener('click', () => {
+        const text = chip.getAttribute('data-prompt');
+        userInput.value = text;
+        sendMessage(text);
+      });
+    });
+
+    // Chat form submission
+    chatForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const text = userInput.value.trim();
+      if (!text) return;
+      sendMessage(text);
+    });
+
+    // Clear chat
+    clearChatBtn.addEventListener('click', () => {
+      conversationHistory = [];
+      messagesContainer.innerHTML = `
+        <div class="message bot">
+          <div class="message-avatar">🤖</div>
+          <div class="message-bubble">
+            <p>Chat cleared. What programming topic would you like to explore next?</p>
+          </div>
+        </div>
+      `;
+    });
+
+    async function sendMessage(question) {
+      userInput.value = '';
+      appendMessage(question, 'user');
+
+      // Add to conversation history (keep last 10 messages for context)
+      const historyPayload = conversationHistory.slice(-8);
+      conversationHistory.push({ role: 'user', text: question });
+      
+      // Typing indicator
+      const typingId = appendTypingIndicator();
+      sendBtn.disabled = true;
+      userInput.disabled = true;
+
+      try {
+        const res = await fetch('/api/ai/tutor', {
+          method: 'POST',
+          headers: { 
+            'Content-Type': 'application/json',
+            ...(getToken() ? { 'Authorization': `Bearer ${getToken()}` } : {})
+          },
+          body: JSON.stringify({ 
+            message: question,
+            history: historyPayload
+          })
+        });
+
+        const data = await res.json();
+        removeTypingIndicator(typingId);
+
+        if (!res.ok) {
+          throw new Error(data.message || 'AI Tutor is momentarily unavailable.');
+        }
+
+        conversationHistory.push({ role: 'model', text: data.reply });
+        appendMessage(data.reply, 'bot');
+
+      } catch (err) {
+        removeTypingIndicator(typingId);
+        appendMessage(`Sorry, I ran into an issue: ${err.message}`, 'bot');
+      } finally {
+        sendBtn.disabled = false;
+        userInput.disabled = false;
+        userInput.focus();
+      }
+    }
+
+    function appendMessage(text, sender) {
+      const msgDiv = document.createElement('div');
+      msgDiv.className = `message ${sender}`;
+
+      const avatar = document.createElement('div');
+      avatar.className = 'message-avatar';
+      avatar.textContent = sender === 'user' ? '👤' : '🤖';
+
+      const bubble = document.createElement('div');
+      bubble.className = 'message-bubble';
+
+      // Format rich markdown & code blocks for tutor response
+      if (sender === 'bot') {
+        bubble.innerHTML = formatBotResponse(text);
+        
+        // Attach copy button listeners
+        bubble.querySelectorAll('.copy-code-btn').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const codeText = btn.getAttribute('data-code') || '';
+            navigator.clipboard.writeText(codeText).then(() => {
+              btn.textContent = 'Copied! ✓';
+              setTimeout(() => { btn.textContent = 'Copy'; }, 2000);
+            }).catch(() => {
+              btn.textContent = 'Copied!';
+            });
+          });
+        });
+      } else {
+        bubble.textContent = text;
+      }
+
+      msgDiv.appendChild(avatar);
+      msgDiv.appendChild(bubble);
+      messagesContainer.appendChild(msgDiv);
+
+      messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+
+    function appendTypingIndicator() {
+      const id = 'typing_' + Date.now();
+      const div = document.createElement('div');
+      div.id = id;
+      div.className = 'message bot';
+      div.innerHTML = `
+        <div class="message-avatar">🤖</div>
+        <div class="message-bubble" style="font-style: italic; color: var(--text-muted); display: flex; align-items: center; gap: 8px;">
+          <span>Vertex AI is thinking</span>
+          <span style="animation: pulse 1s infinite;">● ● ●</span>
+        </div>
+      `;
+      messagesContainer.appendChild(div);
+      messagesContainer.scrollTop = messagesContainer.scrollHeight;
+      return id;
+    }
+
+    function removeTypingIndicator(id) {
+      const el = document.getElementById(id);
+      if (el) el.remove();
+    }
+
+    function formatBotResponse(raw) {
+      if (!raw) return '';
+
+      // Escape raw HTML first
+      let formatted = escapeHtml(raw);
+
+      // Convert Markdown code blocks ```lang ... ```
+      formatted = formatted.replace(/```([a-zA-Z0-9]*)\n?([\s\S]*?)```/g, (match, lang, code) => {
+        const trimmed = code.trim();
+        const escapedAttr = trimmed.replace(/"/g, '&quot;');
+        return `
+          <div style="position: relative; margin: 12px 0;">
+            <div style="display: flex; justify-content: space-between; align-items: center; background: #1e293b; color: #94a3b8; padding: 4px 12px; border-top-left-radius: 6px; border-top-right-radius: 6px; font-size: 11px; font-weight: 600; text-transform: uppercase;">
+              <span>${lang || 'code'}</span>
+              <button type="button" class="copy-code-btn" data-code="${escapedAttr}" style="background: transparent; border: 1px solid #475569; color: #cbd5e1; padding: 2px 8px; border-radius: 4px; font-size: 11px; cursor: pointer;">Copy</button>
+            </div>
+            <pre class="code-block" style="margin: 0; border-top-left-radius: 0; border-top-right-radius: 0; background: #0f172a; color: #f8fafc; overflow-x: auto; padding: 12px;"><code>${trimmed}</code></pre>
+          </div>
+        `;
+      });
+
+      // Convert headers: ### Title -> <h4>Title</h4>
+      formatted = formatted.replace(/^### (.*?)$/gm, '<h4 style="margin: 12px 0 6px; font-weight: 800; color: var(--text-main); font-size: 15px;">$1</h4>');
+      formatted = formatted.replace(/^## (.*?)$/gm, '<h3 style="margin: 14px 0 8px; font-weight: 800; color: var(--text-main); font-size: 16px;">$1</h3>');
+
+      // Convert bold: **text**
+      formatted = formatted.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+
+      // Convert inline code `code`
+      formatted = formatted.replace(/`([^`]+)`/g, '<code style="background: rgba(0,0,0,0.06); padding: 2px 6px; border-radius: 4px; font-family: monospace; font-size: 13px; color: var(--primary); font-weight: 600;">$1</code>');
+
+      // Convert bullet lines
+      formatted = formatted.replace(/^[•\-\*] (.*?)$/gm, '<li style="margin-left: 18px; margin-bottom: 4px;">$1</li>');
+
+      // Convert linebreaks to paragraphs
+      formatted = formatted.replace(/\n\n/g, '</p><p style="margin-top: 8px;">');
+      formatted = formatted.replace(/\n/g, '<br>');
+
+      return `<div style="line-height: 1.6;">${formatted}</div>`;
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign Up - VertexLearn AI</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+  <!-- Navigation Bar -->
+  <header class="navbar">
+    <div class="container nav-container">
+      <a href="/" class="nav-brand">
+        <span>🎓</span>
+        <span>VertexLearn</span>
+        <span class="brand-badge">AI</span>
+      </a>
+
+      <div class="nav-actions">
+        <a href="/login.html" class="btn btn-outline btn-sm">Log In</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Sign Up Form Wrapper -->
+  <main class="auth-wrapper">
+    <div class="card auth-card">
+      <div class="auth-header">
+        <h1 class="auth-title">Create Student Account</h1>
+        <p class="auth-subtitle">Start your personalized learning path with VertexLearn AI</p>
+      </div>
+
+      <!-- Alert placeholder for errors or success -->
+      <div id="alertBox"></div>
+
+      <form id="signupForm">
+        <div class="form-group">
+          <label for="name" class="form-label">Full Name</label>
+          <input type="text" id="name" class="form-control" placeholder="e.g. Alex Johnson" required autocomplete="name">
+        </div>
+
+        <div class="form-group">
+          <label for="email" class="form-label">Email Address</label>
+          <input type="email" id="email" class="form-control" placeholder="student@example.com" required autocomplete="email">
+        </div>
+
+        <div class="form-group">
+          <label for="password" class="form-label">Password</label>
+          <input type="password" id="password" class="form-control" placeholder="Minimum 6 characters" required minlength="6" autocomplete="new-password">
+          <p class="form-text">Your password will be securely hashed with bcrypt.</p>
+        </div>
+
+        <button type="submit" id="submitBtn" class="btn btn-primary btn-block btn-lg" style="margin-top: 10px;">
+          Create Account
+        </button>
+      </form>
+
+      <div class="auth-footer">
+        Already have an account? <a href="/login.html"><strong>Log In here</strong></a>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <p>VertexLearn AI &copy; 2026 &mdash; Built with HTML, CSS, JavaScript, Express &amp; MongoDB</p>
+    </div>
+  </footer>
+
+  <script src="/js/auth.js"></script>
+  <script src="/js/main.js"></script>
+  <script>
+    // Redirect if already authenticated
+    redirectIfAuthenticated();
+
+    const signupForm = document.getElementById('signupForm');
+    const submitBtn = document.getElementById('submitBtn');
+
+    signupForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      clearAlert('alertBox');
+
+      const name = document.getElementById('name').value.trim();
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
+
+      if (!name || !email || !password) {
+        showAlert('alertBox', 'Please fill in all fields.', 'danger');
+        return;
+      }
+
+      if (password.length < 6) {
+        showAlert('alertBox', 'Password must be at least 6 characters long.', 'danger');
+        return;
+      }
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Creating Account...';
+
+      try {
+        const response = await fetch('/api/auth/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, email, password })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.message || 'Registration failed. Please try again.');
+        }
+
+        // Save auth state (token and user object)
+        saveAuth(data.token, data.user);
+        showAlert('alertBox', 'Account created successfully! Redirecting...', 'success');
+
+        setTimeout(() => {
+          window.location.href = '/dashboard.html';
+        }, 1000);
+
+      } catch (err) {
+        showAlert('alertBox', err.message, 'danger');
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Create Account';
+      }
+    });
+  </script>
+</body>
+</html>

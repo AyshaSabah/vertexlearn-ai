@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Log In - VertexLearn AI</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+  <!-- Navigation Bar -->
+  <header class="navbar">
+    <div class="container nav-container">
+      <a href="/" class="nav-brand">
+        <span>🎓</span>
+        <span>VertexLearn</span>
+        <span class="brand-badge">AI</span>
+      </a>
+
+      <div class="nav-actions">
+        <a href="/signup.html" class="btn btn-primary btn-sm">Sign Up</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Login Form Wrapper -->
+  <main class="auth-wrapper">
+    <div class="card auth-card">
+      <div class="auth-header">
+        <h1 class="auth-title">Welcome Back</h1>
+        <p class="auth-subtitle">Log in to resume your lessons, quizzes, and AI tutor chats</p>
+      </div>
+
+      <!-- Alert placeholder -->
+      <div id="alertBox"></div>
+
+      <form id="loginForm">
+        <div class="form-group">
+          <label for="email" class="form-label">Email Address</label>
+          <input type="email" id="email" class="form-control" placeholder="student@example.com" required autocomplete="email">
+        </div>
+
+        <div class="form-group">
+          <label for="password" class="form-label">Password</label>
+          <input type="password" id="password" class="form-control" placeholder="Enter your password" required autocomplete="current-password">
+        </div>
+
+        <button type="submit" id="submitBtn" class="btn btn-primary btn-block btn-lg" style="margin-top: 10px;">
+          Log In
+        </button>
+      </form>
+
+      <div class="auth-footer">
+        Don't have an account yet? <a href="/signup.html"><strong>Sign Up here</strong></a>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <p>VertexLearn AI &copy; 2026 &mdash; Built with HTML, CSS, JavaScript, Express &amp; MongoDB</p>
+    </div>
+  </footer>
+
+  <script src="/js/auth.js"></script>
+  <script src="/js/main.js"></script>
+  <script>
+    // Redirect if already authenticated
+    redirectIfAuthenticated();
+
+    const loginForm = document.getElementById('loginForm');
+    const submitBtn = document.getElementById('submitBtn');
+
+    // Parse any redirect URL from query string
+    const urlParams = new URLSearchParams(window.location.search);
+    const redirectTarget = urlParams.get('redirect') || '/dashboard.html';
+
+    loginForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      clearAlert('alertBox');
+
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
+
+      if (!email || !password) {
+        showAlert('alertBox', 'Please enter your email and password.', 'danger');
+        return;
+      }
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Logging In...';
+
+      try {
+        const response = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.message || 'Invalid email or password.');
+        }
+
+        // Save auth data
+        saveAuth(data.token, data.user);
+        showAlert('alertBox', 'Login successful! Redirecting...', 'success');
+
+        setTimeout(() => {
+          window.location.href = redirectTarget;
+        }, 800);
+
+      } catch (err) {
+        showAlert('alertBox', err.message, 'danger');
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Log In';
+      }
+    });
+  </script>
+</body>
+</html>

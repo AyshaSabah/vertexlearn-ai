@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Study Tools - VertexLearn AI</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+  <!-- Navigation Bar -->
+  <header class="navbar">
+    <div class="container nav-container">
+      <a href="/" class="nav-brand">
+        <span>🎓</span>
+        <span>VertexLearn</span>
+        <span class="brand-badge">AI</span>
+      </a>
+
+      <button class="mobile-menu-btn" aria-label="Toggle Navigation">☰</button>
+
+      <ul class="nav-links">
+        <li><a href="/dashboard.html">Dashboard</a></li>
+        <li><a href="/courses.html">Courses</a></li>
+        <li><a href="/tutor.html">AI Tutor</a></li>
+        <li><a href="/study-tools.html" class="active">Study Tools</a></li>
+      </ul>
+
+      <div class="nav-actions">
+        <!-- Injected by main.js -->
+      </div>
+    </div>
+  </header>
+
+  <!-- Study Tools Container -->
+  <main class="container" style="margin-top: 30px; margin-bottom: 60px; max-width: 860px;">
+    
+    <div style="margin-bottom: 24px;">
+      <span class="badge badge-ai">⚡ Vertex AI Powered</span>
+      <h1 style="font-size: 30px; font-weight: 800; color: var(--text-main); margin-top: 6px;">
+        AI Study Tools
+      </h1>
+      <p style="color: var(--text-muted); font-size: 15px;">
+        Simplify difficult concepts, summarize dense documentation, and generate custom practice questions instantly.
+      </p>
+    </div>
+
+    <!-- Alert Box -->
+    <div id="toolsAlert"></div>
+
+    <div class="card">
+      
+      <!-- Tool Selection Tabs -->
+      <div class="tools-tabs" style="display: flex; flex-wrap: wrap; gap: 6px; border-bottom: 2px solid var(--border-color); padding-bottom: 8px; margin-bottom: 20px;">
+        <button class="tab-btn active" data-tool="explain">💡 Explain Concept</button>
+        <button class="tab-btn" data-tool="flashcards">🃏 Flashcards Deck</button>
+        <button class="tab-btn" data-tool="studyplan">📅 7-Day Study Plan</button>
+        <button class="tab-btn" data-tool="summarize">📝 Summarize Notes</button>
+        <button class="tab-btn" data-tool="practice">❓ Custom Practice Quiz</button>
+      </div>
+
+      <!-- Tab 1: Explain a Topic Form -->
+      <div id="explainSection" class="tool-section">
+        <p style="font-size: 14px; color: var(--text-muted); margin-bottom: 16px;">
+          Enter any computer science or web development topic, and the AI will explain it using simple language, real-world analogies, and a small code example.
+        </p>
+
+        <form id="explainForm">
+          <div class="form-group">
+            <label for="topicInput" class="form-label">Topic or Concept</label>
+            <input type="text" id="topicInput" class="form-control" placeholder="e.g. JavaScript Closures, REST APIs, CSS Flexbox vs Grid" required>
+          </div>
+
+          <div class="form-group">
+            <label for="topicLevel" class="form-label">Explanation Style</label>
+            <select id="topicLevel" class="form-control">
+              <option value="beginner">Beginner (Simple words &amp; real-life analogy)</option>
+              <option value="practical">Practical (Focus on code syntax &amp; usage)</option>
+              <option value="interview">Interview Ready (Key points &amp; gotchas)</option>
+            </select>
+          </div>
+
+          <button type="submit" class="btn btn-ai">
+            ✨ Generate Explanation
+          </button>
+        </form>
+      </div>
+
+      <!-- Tab 2: Interactive Flashcards Generator -->
+      <div id="flashcardsSection" class="tool-section" style="display: none;">
+        <p style="font-size: 14px; color: var(--text-muted); margin-bottom: 16px;">
+          Create spaced-repetition digital flashcards on any technical topic. Test your active recall and flip cards to inspect pedagogical answers.
+        </p>
+
+        <form id="flashcardsForm">
+          <div class="form-group">
+            <label for="fcTopicInput" class="form-label">Course Subject or Module</label>
+            <input type="text" id="fcTopicInput" class="form-control" placeholder="e.g. React Lifecycle &amp; Hooks, TypeScript Generics" required>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px;">
+            <div>
+              <label for="fcDifficulty" class="form-label">Difficulty</label>
+              <select id="fcDifficulty" class="form-control">
+                <option value="beginner">Beginner</option>
+                <option value="intermediate" selected>Intermediate</option>
+                <option value="advanced">Advanced</option>
+              </select>
+            </div>
+            <div>
+              <label for="fcCount" class="form-label">Deck Size</label>
+              <select id="fcCount" class="form-control">
+                <option value="5" selected>5 Flashcards</option>
+                <option value="8">8 Flashcards</option>
+              </select>
+            </div>
+          </div>
+
+          <button type="submit" id="genFlashcardsBtn" class="btn btn-ai">
+            ✨ Generate Flashcards Deck
+          </button>
+        </form>
+
+        <!-- Interactive Flashcards Deck Viewer -->
+        <div id="flashcardsDeckContainer" style="display: none; margin-top: 24px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+            <span id="deckCounter" style="font-weight: 700; font-size: 13px; color: var(--text-muted);">Card 1 of 5</span>
+            <span style="font-size: 12px; color: var(--accent-ai); font-weight: 600;">👆 Click card or press Space to flip</span>
+          </div>
+
+          <!-- 3D Flip Card -->
+          <div id="flashcardBox" style="perspective: 1000px; cursor: pointer; min-height: 200px; margin-bottom: 16px;">
+            <div id="flashcardInner" style="position: relative; width: 100%; min-height: 200px; text-align: center; transition: transform 0.5s; transform-style: preserve-3d; background: #ffffff; border: 2px solid var(--border-color); border-radius: 12px; padding: 24px; box-shadow: 0 4px 12px rgba(0,0,0,0.06); display: flex; flex-direction: column; justify-content: center; align-items: center;">
+              <div id="cardBadge" style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--accent-ai); background: #f3e8ff; padding: 2px 8px; border-radius: 9999px; margin-bottom: 12px;">QUESTION / CONCEPT</div>
+              <div id="cardText" style="font-size: 18px; font-weight: 700; color: var(--text-main); line-height: 1.5;"></div>
+            </div>
+          </div>
+
+          <!-- Controls -->
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+            <button id="prevCardBtn" class="btn btn-outline btn-sm">&larr; Previous</button>
+            <div style="display: flex; gap: 8px;">
+              <button id="markReviewBtn" class="btn btn-outline btn-sm" style="color: var(--warning); border-color: var(--warning);">⚠️ Needs Review</button>
+              <button id="markMasteredBtn" class="btn btn-outline btn-sm" style="color: var(--success); border-color: var(--success);">✓ Mastered</button>
+            </div>
+            <button id="nextCardBtn" class="btn btn-primary btn-sm">Next &rarr;</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab 3: Personalized 7-Day Study Planner -->
+      <div id="studyplanSection" class="tool-section" style="display: none;">
+        <p style="font-size: 14px; color: var(--text-muted); margin-bottom: 16px;">
+          Build a structured, milestone-driven 7-day study plan tailored to your available hours and target engineering goals.
+        </p>
+
+        <form id="studyplanForm">
+          <div class="form-group">
+            <label for="planGoalInput" class="form-label">Primary Learning Goal or Target Skill</label>
+            <input type="text" id="planGoalInput" class="form-control" placeholder="e.g., Master Full-Stack Node.js &amp; MongoDB, Prepare for React Frontend Interview" required>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px;">
+            <div>
+              <label for="planHours" class="form-label">Available Time Per Day</label>
+              <select id="planHours" class="form-control">
+                <option value="1 hour">1 hour / day</option>
+                <option value="2 hours" selected>2 hours / day</option>
+                <option value="3+ hours">3+ hours / day (Intensive)</option>
+              </select>
+            </div>
+            <div>
+              <label for="planLevel" class="form-label">Current Experience</label>
+              <select id="planLevel" class="form-control">
+                <option value="beginner">Beginner</option>
+                <option value="intermediate" selected>Intermediate</option>
+                <option value="advanced">Advanced</option>
+              </select>
+            </div>
+          </div>
+
+          <button type="submit" id="genPlanBtn" class="btn btn-ai">
+            ✨ Generate 7-Day Study Roadmap
+          </button>
+        </form>
+      </div>
+
+      <!-- Tab 4: Summarize Text Form -->
+      <div id="summarizeSection" class="tool-section" style="display: none;">
+        <p style="font-size: 14px; color: var(--text-muted); margin-bottom: 16px;">
+          Paste any long article, documentation snippet, or lesson notes below. The AI will distill it into clear, scannable bullet points.
+        </p>
+
+        <form id="summarizeForm">
+          <div class="form-group">
+            <label for="summarizeInput" class="form-label">Paste Notes or Documentation</label>
+            <textarea id="summarizeInput" class="form-control" placeholder="Paste your text here (at least 2-3 sentences)..." style="min-height: 140px;" required></textarea>
+          </div>
+
+          <button type="submit" class="btn btn-ai">
+            ✨ Summarize into Key Points
+          </button>
+        </form>
+      </div>
+
+      <!-- Tab 5: Practice Questions Form -->
+      <div id="practiceSection" class="tool-section" style="display: none;">
+        <p style="font-size: 14px; color: var(--text-muted); margin-bottom: 16px;">
+          Generate practice quiz questions with answer keys on any subject to test yourself before an exam or interview.
+        </p>
+
+        <form id="practiceForm">
+          <div class="form-group">
+            <label for="practiceTopicInput" class="form-label">Subject / Topic</label>
+            <input type="text" id="practiceTopicInput" class="form-control" placeholder="e.g. Node.js Event Loop, MongoDB CRUD operations" required>
+          </div>
+
+          <div class="form-group">
+            <label for="questionCount" class="form-label">Number of Questions</label>
+            <select id="questionCount" class="form-control">
+              <option value="3">3 Practice Questions</option>
+              <option value="5">5 Practice Questions</option>
+            </select>
+          </div>
+
+          <button type="submit" class="btn btn-ai">
+            ✨ Generate Practice Questions
+          </button>
+        </form>
+      </div>
+
+      <!-- Common Output Box -->
+      <div id="outputContainer" style="display: none; margin-top: 30px; border-top: 1px solid var(--border-color); padding-top: 20px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+          <h3 style="font-size: 16px; font-weight: 700; color: var(--text-main);">AI Generated Result</h3>
+          <button id="copyOutputBtn" class="btn btn-outline btn-sm">📋 Copy to Clipboard</button>
+        </div>
+
+        <div id="toolOutputBox" class="tool-output-box"></div>
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <p>VertexLearn AI &copy; 2026 &mdash; Built with HTML, CSS, JavaScript, Express &amp; MongoDB</p>
+    </div>
+  </footer>
+
+  <script src="/js/auth.js"></script>
+  <script src="/js/main.js"></script>
+  <script>
+    // Tab Switching
+    const tabs = document.querySelectorAll('.tab-btn');
+    const sections = {
+      explain: document.getElementById('explainSection'),
+      flashcards: document.getElementById('flashcardsSection'),
+      studyplan: document.getElementById('studyplanSection'),
+      summarize: document.getElementById('summarizeSection'),
+      practice: document.getElementById('practiceSection')
+    };
+
+    function switchTab(tool) {
+      tabs.forEach(t => {
+        t.classList.toggle('active', t.getAttribute('data-tool') === tool);
+      });
+      Object.keys(sections).forEach(key => {
+        if (sections[key]) {
+          sections[key].style.display = key === tool ? 'block' : 'none';
+        }
+      });
+      if (tool === 'flashcards') {
+        outputContainer.style.display = 'none';
+      }
+    }
+
+    tabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        const tool = tab.getAttribute('data-tool');
+        switchTab(tool);
+      });
+    });
+
+    // Check URL query param for deep linking e.g. ?tool=flashcards
+    const urlParams = new URLSearchParams(window.location.search);
+    const initialTool = urlParams.get('tool');
+    if (initialTool && sections[initialTool]) {
+      switchTab(initialTool);
+    }
+
+    const outputContainer = document.getElementById('outputContainer');
+    const toolOutputBox = document.getElementById('toolOutputBox');
+    const copyOutputBtn = document.getElementById('copyOutputBtn');
+
+    // Tool 1: Explain Topic
+    document.getElementById('explainForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const topic = document.getElementById('topicInput').value.trim();
+      const level = document.getElementById('topicLevel').value;
+      await runStudyTool('explain', { topic, level });
+    });
+
+    // Tool 2: Interactive Flashcards
+    let flashcardsDeck = [];
+    let currentCardIdx = 0;
+    let isFlipped = false;
+    const masteredIndices = new Set();
+    const reviewIndices = new Set();
+
+    document.getElementById('flashcardsForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const topic = document.getElementById('fcTopicInput').value.trim();
+      const difficulty = document.getElementById('fcDifficulty').value;
+      const count = parseInt(document.getElementById('fcCount').value, 10) || 5;
+
+      const btn = document.getElementById('genFlashcardsBtn');
+      btn.disabled = true;
+      btn.textContent = 'Generating Deck with Gemini... ✨';
+      clearAlert('toolsAlert');
+
+      try {
+        const res = await fetch('/api/ai/modules/flashcards', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ moduleTitle: topic, difficulty, count })
+        });
+        const data = await res.json();
+        if (data.success && Array.isArray(data.flashcards) && data.flashcards.length > 0) {
+          flashcardsDeck = data.flashcards;
+          currentCardIdx = 0;
+          isFlipped = false;
+          masteredIndices.clear();
+          reviewIndices.clear();
+
+          document.getElementById('flashcardsDeckContainer').style.display = 'block';
+          renderCurrentFlashcard();
+          showAlert('toolsAlert', `Generated ${flashcardsDeck.length} flashcards! Click the card to flip between Question and Answer.`, 'success');
+        } else {
+          showAlert('toolsAlert', 'Failed to generate flashcards. Please try again.', 'danger');
+        }
+      } catch (err) {
+        showAlert('toolsAlert', 'Flashcards error: ' + err.message, 'danger');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = '✨ Generate Flashcards Deck';
+      }
+    });
+
+    function renderCurrentFlashcard() {
+      if (!flashcardsDeck.length) return;
+      const card = flashcardsDeck[currentCardIdx];
+      const cardText = document.getElementById('cardText');
+      const cardBadge = document.getElementById('cardBadge');
+      const inner = document.getElementById('flashcardInner');
+      const counter = document.getElementById('deckCounter');
+
+      counter.textContent = `Card ${currentCardIdx + 1} of ${flashcardsDeck.length} (${masteredIndices.size} mastered)`;
+
+      if (isFlipped) {
+        cardBadge.textContent = 'ANSWER / KEY TAKEAWAY';
+        cardBadge.style.color = '#16a34a';
+        cardBadge.style.background = '#dcfce7';
+        cardText.innerHTML = renderMarkdown(card.back);
+        inner.style.borderColor = '#86efac';
+      } else {
+        cardBadge.textContent = 'QUESTION / CONCEPT';
+        cardBadge.style.color = 'var(--accent-ai)';
+        cardBadge.style.background = '#f3e8ff';
+        cardText.textContent = card.front;
+        inner.style.borderColor = 'var(--border-color)';
+      }
+
+      document.getElementById('prevCardBtn').disabled = currentCardIdx === 0;
+      document.getElementById('nextCardBtn').disabled = currentCardIdx === flashcardsDeck.length - 1;
+    }
+
+    function flipCurrentCard() {
+      isFlipped = !isFlipped;
+      renderCurrentFlashcard();
+    }
+
+    // Flip card click & space listener
+    const flashcardBox = document.getElementById('flashcardBox');
+    if (flashcardBox) {
+      flashcardBox.addEventListener('click', flipCurrentCard);
+    }
+    document.addEventListener('keydown', (e) => {
+      if (sections.flashcards.style.display !== 'none' && e.code === 'Space' && !['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) {
+        e.preventDefault();
+        flipCurrentCard();
+      }
+    });
+
+    document.getElementById('prevCardBtn').addEventListener('click', () => {
+      if (currentCardIdx > 0) {
+        currentCardIdx--;
+        isFlipped = false;
+        renderCurrentFlashcard();
+      }
+    });
+
+    document.getElementById('nextCardBtn').addEventListener('click', () => {
+      if (currentCardIdx < flashcardsDeck.length - 1) {
+        currentCardIdx++;
+        isFlipped = false;
+        renderCurrentFlashcard();
+      }
+    });
+
+    document.getElementById('markMasteredBtn').addEventListener('click', () => {
+      masteredIndices.add(currentCardIdx);
+      reviewIndices.delete(currentCardIdx);
+      if (currentCardIdx < flashcardsDeck.length - 1) {
+        currentCardIdx++;
+        isFlipped = false;
+      }
+      renderCurrentFlashcard();
+    });
+
+    document.getElementById('markReviewBtn').addEventListener('click', () => {
+      reviewIndices.add(currentCardIdx);
+      masteredIndices.delete(currentCardIdx);
+      if (currentCardIdx < flashcardsDeck.length - 1) {
+        currentCardIdx++;
+        isFlipped = false;
+      }
+      renderCurrentFlashcard();
+    });
+
+    // Tool 3: 7-Day Study Plan
+    document.getElementById('studyplanForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const goal = document.getElementById('planGoalInput').value.trim();
+      const hours = document.getElementById('planHours').value;
+      const level = document.getElementById('planLevel').value;
+
+      const btn = document.getElementById('genPlanBtn');
+      btn.disabled = true;
+      btn.textContent = 'Synthesizing 7-Day Roadmap... ✨';
+      clearAlert('toolsAlert');
+
+      outputContainer.style.display = 'block';
+      toolOutputBox.innerHTML = `
+        <div style="display: flex; align-items: center; gap: 10px; color: var(--text-muted); font-style: italic; padding: 20px;">
+          <span>⚡ Gemini 3.8 Flash is architecting your personalized 7-day study curriculum...</span>
+        </div>
+      `;
+
+      try {
+        const res = await fetch('/api/ai/study-plan', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            goal,
+            hoursPerDay: hours,
+            experienceLevel: level
+          })
+        });
+        const data = await res.json();
+        if (data.success && data.studyPlan) {
+          currentRawResult = data.studyPlan;
+          toolOutputBox.innerHTML = renderMarkdown(currentRawResult);
+          toolOutputBox.scrollIntoView({ behavior: 'smooth' });
+        } else {
+          throw new Error(data.message || 'Failed to generate study plan.');
+        }
+      } catch (err) {
+        showAlert('toolsAlert', err.message, 'danger');
+        toolOutputBox.innerHTML = `<div style="color: var(--danger); padding: 16px;">Failed to generate plan: ${escapeHtml(err.message)}</div>`;
+      } finally {
+        btn.disabled = false;
+        btn.textContent = '✨ Generate 7-Day Study Roadmap';
+      }
+    });
+
+    // Tool 4: Summarize Text
+    document.getElementById('summarizeForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const text = document.getElementById('summarizeInput').value.trim();
+      await runStudyTool('summarize', { text });
+    });
+
+    // Tool 5: Practice Questions
+    document.getElementById('practiceForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const topic = document.getElementById('practiceTopicInput').value.trim();
+      const count = document.getElementById('questionCount').value;
+      await runStudyTool('practice', { topic, count });
+    });
+
+    let currentRawResult = '';
+
+    async function runStudyTool(toolType, payload) {
+      clearAlert('toolsAlert');
+      outputContainer.style.display = 'block';
+      toolOutputBox.innerHTML = `
+        <div style="display: flex; align-items: center; gap: 10px; color: var(--text-muted); font-style: italic; padding: 20px;">
+          <span>⚡ Vertex AI is generating structured study content...</span>
+        </div>
+      `;
+
+      try {
+        const res = await fetch('/api/ai/study-tools', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(getToken() ? { 'Authorization': `Bearer ${getToken()}` } : {})
+          },
+          body: JSON.stringify({ toolType, ...payload })
+        });
+
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message || 'Error executing AI study tool.');
+
+        currentRawResult = data.result || '';
+        toolOutputBox.innerHTML = renderMarkdown(currentRawResult);
+        toolOutputBox.scrollIntoView({ behavior: 'smooth' });
+
+      } catch (err) {
+        console.error('Study tool error:', err);
+        toolOutputBox.innerHTML = `<div style="color: var(--danger); padding: 16px;">Failed to generate result: ${escapeHtml(err.message)}</div>`;
+        showAlert('toolsAlert', err.message, 'danger');
+      }
+    }
+
+    function renderMarkdown(raw) {
+      if (!raw) return '';
+      let formatted = escapeHtml(raw);
+
+      // Code blocks
+      formatted = formatted.replace(/```([a-zA-Z0-9]*)\n?([\s\S]*?)```/g, (match, lang, code) => {
+        return `<pre class="code-block" style="background: #0f172a; color: #f8fafc; padding: 14px; border-radius: 6px; overflow-x: auto; margin: 14px 0; font-family: monospace; font-size: 13px;"><code>${code.trim()}</code></pre>`;
+      });
+
+      // Headers
+      formatted = formatted.replace(/^### (.*?)$/gm, '<h3 style="margin: 18px 0 8px; font-weight: 800; color: var(--text-main); font-size: 18px; border-bottom: 1px solid var(--border-color); padding-bottom: 4px;">$1</h3>');
+      formatted = formatted.replace(/^## (.*?)$/gm, '<h2 style="margin: 20px 0 10px; font-weight: 800; color: var(--text-main); font-size: 20px;">$1</h2>');
+
+      // Bold & inline code
+      formatted = formatted.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+      formatted = formatted.replace(/`([^`]+)`/g, '<code style="background: rgba(0,0,0,0.06); padding: 2px 6px; border-radius: 4px; font-family: monospace; font-size: 13px; color: var(--primary); font-weight: 600;">$1</code>');
+
+      // Lists
+      formatted = formatted.replace(/^[•\-\*] (.*?)$/gm, '<li style="margin-left: 20px; margin-bottom: 6px;">$1</li>');
+      formatted = formatted.replace(/^(\d+)\. (.*?)$/gm, '<li style="margin-left: 20px; margin-bottom: 6px;" value="$1">$2</li>');
+
+      // Paragraphs & breaks
+      formatted = formatted.replace(/\n\n/g, '</p><p style="margin-top: 10px;">');
+      formatted = formatted.replace(/\n/g, '<br>');
+
+      return `<div style="line-height: 1.65; color: var(--text-main);">${formatted}</div>`;
+    }
+
+    // Copy to clipboard
+    copyOutputBtn.addEventListener('click', async () => {
+      const text = currentRawResult || toolOutputBox.innerText;
+      if (!text) return;
+      try {
+        await navigator.clipboard.writeText(text);
+        copyOutputBtn.textContent = '✅ Copied!';
+        setTimeout(() => copyOutputBtn.textContent = '📋 Copy to Clipboard', 2000);
+      } catch (e) {
+        copyOutputBtn.textContent = '✅ Copied!';
+        setTimeout(() => copyOutputBtn.textContent = '📋 Copy to Clipboard', 2000);
+      }
+    });
+  </script>
+</body>
+</html>

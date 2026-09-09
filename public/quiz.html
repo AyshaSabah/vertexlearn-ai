@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Assessment Quiz - VertexLearn AI</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+  <!-- Navigation Bar -->
+  <header class="navbar">
+    <div class="container nav-container">
+      <a href="/" class="nav-brand">
+        <span>🎓</span>
+        <span>VertexLearn</span>
+        <span class="brand-badge">AI</span>
+      </a>
+
+      <button class="mobile-menu-btn" aria-label="Toggle Navigation">☰</button>
+
+      <ul class="nav-links">
+        <li><a href="/dashboard.html">Dashboard</a></li>
+        <li><a href="/courses.html">Courses</a></li>
+        <li><a href="/tutor.html">AI Tutor</a></li>
+        <li><a href="/study-tools.html">Study Tools</a></li>
+      </ul>
+
+      <div class="nav-actions">
+        <!-- Injected by main.js -->
+      </div>
+    </div>
+  </header>
+
+  <!-- Quiz Container -->
+  <main class="container" style="margin-top: 24px; margin-bottom: 60px;">
+    
+    <!-- Top breadcrumb & course link -->
+    <div style="margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+      <a id="backToCourseLink" href="/courses.html" style="font-size: 13px; font-weight: 600; color: var(--text-muted); display: inline-flex; align-items: center; gap: 4px;">
+        <span>&larr;</span> Back to Course Curriculum
+      </a>
+      <div id="quizTimerBadge" style="display: none; align-items: center; gap: 6px; background-color: var(--bg-card); border: 1px solid var(--border-color); padding: 4px 12px; border-radius: var(--radius-pill); font-size: 13px; font-weight: 700; color: var(--text-main);">
+        <span>⏱</span> <span id="timerCountdown">00:00</span>
+      </div>
+    </div>
+
+    <!-- Alert placeholder -->
+    <div id="quizAlert" style="margin-bottom: 16px;"></div>
+
+    <div class="quiz-card card" style="padding: 28px 32px;">
+      
+      <!-- Top header -->
+      <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1px solid var(--border-color); padding-bottom: 18px; margin-bottom: 24px; flex-wrap: wrap; gap: 12px;">
+        <div>
+          <span class="badge badge-primary" id="quizTypeBadge">Formal Assessment</span>
+          <h1 id="quizTitle" style="font-size: 24px; font-weight: 800; color: var(--text-main); margin-top: 6px; margin-bottom: 2px;">
+            Loading Quiz...
+          </h1>
+          <p id="quizSubtitle" style="font-size: 13px; color: var(--text-muted); margin: 0;">
+            Answer all questions to demonstrate subject comprehension and log your test score.
+          </p>
+        </div>
+        <div id="quizMetaInfo" style="text-align: right;">
+          <span id="questionCountBadge" style="font-size: 12px; font-weight: 700; color: var(--primary); background-color: var(--primary-light); padding: 4px 10px; border-radius: 4px;">
+            -- Questions
+          </span>
+        </div>
+      </div>
+
+      <!-- Quick Question Jump Pills (Answered vs Unanswered tracker) -->
+      <div id="questionNavContainer" style="display: none; margin-bottom: 24px; background-color: var(--bg-main); padding: 10px 14px; border-radius: var(--radius-sm); border: 1px solid var(--border-color); align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
+        <div style="font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">
+          Question Jump:
+        </div>
+        <div id="questionPillsList" style="display: flex; gap: 6px; flex-wrap: wrap;"></div>
+      </div>
+
+      <!-- Progress Meter -->
+      <div id="quizProgressContainer" style="display: none; margin-bottom: 24px;">
+        <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 6px;">
+          <span id="answeredCounterText">0 of 0 answered</span>
+          <span id="answeredPercentText">0%</span>
+        </div>
+        <div class="progress-bar-bg" style="height: 6px;">
+          <div id="quizProgressBar" class="progress-bar-fill" style="width: 0%;"></div>
+        </div>
+      </div>
+
+      <!-- Quiz Questions Form -->
+      <div id="quizContent">
+        <div style="text-align: center; padding: 40px 20px;">
+          <p style="color: var(--text-muted);">Preparing your assessment questions...</p>
+        </div>
+      </div>
+
+      <!-- Quiz Submit / Actions Bar -->
+      <div id="quizActions" style="margin-top: 32px; padding-top: 20px; border-top: 1px solid var(--border-color); display: none; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px;">
+        <span id="unansweredWarning" style="font-size: 13px; color: var(--text-muted); font-weight: 500;">
+          Select your answers above, then click submit to verify your score.
+        </span>
+        <button id="submitQuizBtn" class="btn btn-primary btn-lg" style="padding: 10px 24px; font-weight: 700;">
+          Submit Assessment
+        </button>
+      </div>
+
+      <!-- Quiz Results Panel (Shown after submission) -->
+      <div id="quizResultsPanel" style="display: none; text-align: center; padding: 20px 0;">
+        <div id="scoreIcon" style="font-size: 52px; margin-bottom: 12px;">🎉</div>
+        <h2 id="scoreTitle" style="font-size: 26px; font-weight: 800; color: var(--text-main); margin-bottom: 6px;">
+          Assessment Complete!
+        </h2>
+        <p id="scoreSubtitle" style="color: var(--text-muted); font-size: 14px; margin-bottom: 18px;">
+          Here is your comprehensive evaluation breakdown:
+        </p>
+
+        <!-- Score Summary Card -->
+        <div style="max-width: 380px; margin: 0 auto 28px; background-color: var(--bg-main); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 20px;">
+          <div style="font-size: 40px; font-weight: 800; color: var(--primary); line-height: 1.1; margin-bottom: 6px;">
+            <span id="finalScore">0</span> / <span id="finalTotal">0</span>
+          </div>
+          <div id="finalPercentage" style="font-size: 20px; font-weight: 800; color: var(--text-main); margin-bottom: 8px;">
+            Score: 0%
+          </div>
+          <div id="passStatusBadge" style="display: inline-block; padding: 4px 12px; border-radius: var(--radius-pill); font-size: 12px; font-weight: 700; text-transform: uppercase;">
+            Passed
+          </div>
+          <div id="timeSpentSummary" style="font-size: 12px; color: var(--text-muted); margin-top: 10px;">
+            ⏱ Completed in 0m 0s
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div style="display: flex; justify-content: center; gap: 12px; margin-bottom: 36px; flex-wrap: wrap;">
+          <button id="retryQuizBtn" class="btn btn-outline">
+            🔄 Retake Quiz
+          </button>
+          <a id="returnToCourseBtn" href="/courses.html" class="btn btn-outline">
+            📖 Course Syllabus
+          </a>
+          <a href="/dashboard.html" class="btn btn-primary">
+            📊 View Dashboard
+          </a>
+          <a id="askTutorAboutQuizBtn" href="/tutor.html" class="btn btn-ai">
+            🤖 Review Mistakes with AI Tutor
+          </a>
+        </div>
+
+        <!-- Detailed Question-by-Question Review -->
+        <div style="text-align: left; border-top: 1px solid var(--border-color); padding-top: 28px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; flex-wrap: wrap; gap: 8px;">
+            <h3 style="font-size: 18px; font-weight: 800; color: var(--text-main); margin: 0;">Detailed Answer Review</h3>
+            <span style="font-size: 12px; color: var(--text-muted);">Green indicates correct answers; red indicates mistakes with explanatory guidance.</span>
+          </div>
+          <div id="answerReviewList" style="display: flex; flex-direction: column; gap: 16px;"></div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <p>VertexLearn AI &copy; 2026 &mdash; Built with HTML, CSS, JavaScript, Express &amp; MongoDB</p>
+    </div>
+  </footer>
+
+  <script src="/js/auth.js"></script>
+  <script src="/js/main.js"></script>
+  <script>
+    // Multiple-Choice Quiz Engine
+    let currentQuiz = null;
+    let userAnswers = {}; // questionId -> selectedOptionIndex
+    let quizStartTime = null;
+    let timerInterval = null;
+    let timeRemainingSeconds = 0;
+    let totalTimeAllocatedSeconds = 0;
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const courseId = urlParams.get('courseId');
+
+      if (!courseId) {
+        window.location.href = '/courses.html';
+        return;
+      }
+
+      // Update back link
+      const backLink = document.getElementById('backToCourseLink');
+      if (backLink) {
+        backLink.href = `/course.html?id=${courseId}`;
+      }
+
+      const returnCourseBtn = document.getElementById('returnToCourseBtn');
+      if (returnCourseBtn) {
+        returnCourseBtn.href = `/course.html?id=${courseId}`;
+      }
+
+      await loadQuiz(courseId);
+    });
+
+    async function loadQuiz(courseId) {
+      try {
+        const res = await fetch(`/api/quiz/${courseId}`);
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          throw new Error(err.message || 'Quiz not available for this course.');
+        }
+        currentQuiz = await res.json();
+
+        document.getElementById('quizTitle').textContent = `${currentQuiz.courseTitle} Assessment`;
+        document.title = `${currentQuiz.courseTitle} Quiz - VertexLearn AI`;
+        document.getElementById('questionCountBadge').textContent = `${currentQuiz.questions.length} Questions`;
+
+        renderQuizQuestions();
+        startQuizTimer();
+      } catch (err) {
+        console.error('Error loading quiz:', err);
+        showAlert('quizAlert', err.message, 'danger');
+        document.getElementById('quizContent').innerHTML = `
+          <div style="text-align: center; padding: 36px 20px;">
+            <div style="font-size: 36px; margin-bottom: 12px;">⚠️</div>
+            <h3 style="font-size: 18px; font-weight: 700; color: var(--text-main); margin-bottom: 6px;">Assessment Unavailable</h3>
+            <p style="color: var(--text-muted); font-size: 14px; max-width: 440px; margin: 0 auto 20px;">
+              ${escapeHtml(err.message)}
+            </p>
+            <a href="/courses.html" class="btn btn-outline btn-sm">Return to Course Catalog</a>
+          </div>
+        `;
+      }
+    }
+
+    function startQuizTimer() {
+      if (!currentQuiz || !currentQuiz.questions) return;
+      
+      // Allocate 90 seconds per question
+      totalTimeAllocatedSeconds = Math.max(120, currentQuiz.questions.length * 90);
+      timeRemainingSeconds = totalTimeAllocatedSeconds;
+      quizStartTime = Date.now();
+
+      const timerBadge = document.getElementById('quizTimerBadge');
+      if (timerBadge) timerBadge.style.display = 'inline-flex';
+
+      updateTimerDisplay();
+
+      if (timerInterval) clearInterval(timerInterval);
+      timerInterval = setInterval(() => {
+        timeRemainingSeconds--;
+        updateTimerDisplay();
+
+        if (timeRemainingSeconds <= 0) {
+          clearInterval(timerInterval);
+          showAlert('quizAlert', 'Time has expired! Automatically submitting your assessment...', 'info');
+          submitAssessment(true);
+        }
+      }, 1000);
+    }
+
+    function updateTimerDisplay() {
+      const countdownEl = document.getElementById('timerCountdown');
+      if (!countdownEl) return;
+
+      const mins = Math.floor(timeRemainingSeconds / 60);
+      const secs = timeRemainingSeconds % 60;
+      countdownEl.textContent = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+
+      const timerBadge = document.getElementById('quizTimerBadge');
+      if (timerBadge) {
+        if (timeRemainingSeconds <= 30) {
+          timerBadge.style.borderColor = '#ef4444';
+          timerBadge.style.color = '#ef4444';
+        } else {
+          timerBadge.style.borderColor = 'var(--border-color)';
+          timerBadge.style.color = 'var(--text-main)';
+        }
+      }
+    }
+
+    function renderQuizQuestions() {
+      const container = document.getElementById('quizContent');
+      const actions = document.getElementById('quizActions');
+      const progressContainer = document.getElementById('quizProgressContainer');
+      const jumpContainer = document.getElementById('questionNavContainer');
+      const pillsContainer = document.getElementById('questionPillsList');
+
+      userAnswers = {};
+
+      if (!currentQuiz || !currentQuiz.questions) return;
+
+      // Render Question Jump Pills
+      if (pillsContainer) {
+        pillsContainer.innerHTML = currentQuiz.questions.map((q, idx) => `
+          <button type="button" class="question-jump-pill" data-target="qBlock_${idx}" style="min-width: 28px; height: 28px; padding: 0 6px; font-size: 12px; font-weight: 700; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-card); cursor: pointer; color: var(--text-main);">
+            ${idx + 1}
+          </button>
+        `).join('');
+
+        pillsContainer.querySelectorAll('.question-jump-pill').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const targetId = btn.getAttribute('data-target');
+            const targetEl = document.getElementById(targetId);
+            if (targetEl) {
+              targetEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+          });
+        });
+      }
+
+      // Render Questions List
+      container.innerHTML = currentQuiz.questions.map((q, qIndex) => {
+        return `
+          <div class="question-block" style="margin-bottom: 32px; padding: 20px; background-color: var(--bg-main); border: 1px solid var(--border-color); border-radius: var(--radius-sm);" id="qBlock_${qIndex}">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 14px;">
+              <h3 style="font-size: 16px; font-weight: 700; color: var(--text-main); margin: 0; line-height: 1.4;">
+                <span style="color: var(--primary); margin-right: 4px;">Q${qIndex + 1}.</span> ${escapeHtml(q.question)}
+              </h3>
+              <span id="qStatus_${qIndex}" style="font-size: 11px; font-weight: 600; color: var(--text-muted); background: var(--bg-card); border: 1px solid var(--border-color); padding: 2px 8px; border-radius: 4px;">
+                Unanswered
+              </span>
+            </div>
+
+            <div class="options-list" style="display: flex; flex-direction: column; gap: 8px;">
+              ${q.options.map((opt, optIndex) => `
+                <div class="quiz-option" data-qid="${q.id}" data-qindex="${qIndex}" data-optindex="${optIndex}" style="padding: 12px 16px; background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-sm); cursor: pointer; display: flex; align-items: center; gap: 12px; transition: all 0.2s ease;">
+                  <span style="display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 50%; background-color: var(--bg-main); border: 1px solid var(--border-color); font-size: 12px; font-weight: 700; color: var(--text-main);">
+                    ${String.fromCharCode(65 + optIndex)}
+                  </span>
+                  <span style="font-size: 14px; color: var(--text-main); flex: 1;">
+                    ${escapeHtml(opt)}
+                  </span>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      // Add click handlers on options
+      document.querySelectorAll('.quiz-option').forEach(optEl => {
+        optEl.addEventListener('click', () => {
+          const qId = optEl.getAttribute('data-qid');
+          const qIndex = parseInt(optEl.getAttribute('data-qindex'), 10);
+          const optIndex = parseInt(optEl.getAttribute('data-optindex'), 10);
+
+          // Clear previous selection in this question block
+          const block = document.getElementById(`qBlock_${qIndex}`);
+          block.querySelectorAll('.quiz-option').forEach(el => {
+            el.classList.remove('selected');
+            el.style.borderColor = 'var(--border-color)';
+            el.style.backgroundColor = 'var(--bg-card)';
+          });
+
+          // Mark this selected
+          optEl.classList.add('selected');
+          optEl.style.borderColor = 'var(--primary)';
+          optEl.style.backgroundColor = 'var(--primary-light)';
+
+          // Record answer (using question id)
+          userAnswers[qId] = optIndex;
+
+          // Update status badge
+          const statusBadge = document.getElementById(`qStatus_${qIndex}`);
+          if (statusBadge) {
+            statusBadge.textContent = 'Answered';
+            statusBadge.style.color = '#065f46';
+            statusBadge.style.backgroundColor = '#ecfdf5';
+            statusBadge.style.borderColor = '#a7f3d0';
+          }
+
+          // Update jump pill
+          const pill = document.querySelector(`.question-jump-pill[data-target="qBlock_${qIndex}"]`);
+          if (pill) {
+            pill.style.backgroundColor = '#10b981';
+            pill.style.color = '#ffffff';
+            pill.style.borderColor = '#10b981';
+          }
+
+          updateAnsweredProgress();
+        });
+      });
+
+      actions.style.display = 'flex';
+      if (progressContainer) progressContainer.style.display = 'block';
+      if (jumpContainer) jumpContainer.style.display = 'flex';
+      updateAnsweredProgress();
+    }
+
+    function updateAnsweredProgress() {
+      const answeredCount = Object.keys(userAnswers).length;
+      const total = currentQuiz.questions.length;
+      const pct = total > 0 ? Math.round((answeredCount / total) * 100) : 0;
+
+      const counterText = document.getElementById('answeredCounterText');
+      const percentText = document.getElementById('answeredPercentText');
+      const progressBar = document.getElementById('quizProgressBar');
+
+      if (counterText) counterText.textContent = `${answeredCount} of ${total} answered`;
+      if (percentText) percentText.textContent = `${pct}%`;
+      if (progressBar) progressBar.style.width = `${pct}%`;
+
+      const warningEl = document.getElementById('unansweredWarning');
+      if (warningEl) {
+        if (answeredCount === total) {
+          warningEl.innerHTML = '<span style="color: var(--success); font-weight: 700;">✅ All questions answered! Ready for grading.</span>';
+        } else {
+          warningEl.textContent = `${total - answeredCount} questions remaining to answer.`;
+        }
+      }
+    }
+
+    // Submit Assessment
+    async function submitAssessment(force = false) {
+      if (!currentQuiz) return;
+      const total = currentQuiz.questions.length;
+      const answeredCount = Object.keys(userAnswers).length;
+
+      if (!force && answeredCount < total) {
+        const remaining = total - answeredCount;
+        if (!confirm(`You have ${remaining} unanswered question(s). Submit assessment now?`)) {
+          return;
+        }
+      }
+
+      if (timerInterval) clearInterval(timerInterval);
+
+      const submitBtn = document.getElementById('submitQuizBtn');
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<span>⏳</span> Grading Assessment...';
+
+      const timeSpentSeconds = quizStartTime ? Math.round((Date.now() - quizStartTime) / 1000) : 0;
+
+      try {
+        const res = await authFetch('/api/quiz/submit', {
+          method: 'POST',
+          body: JSON.stringify({
+            courseId: currentQuiz.courseId,
+            answers: userAnswers,
+            timeSpentSeconds
+          })
+        });
+
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}));
+          throw new Error(errData.error || 'Server rejected quiz grading.');
+        }
+
+        const data = await res.json();
+        renderResults(data);
+
+      } catch (err) {
+        console.error('Quiz submission error:', err);
+        showAlert('quizAlert', 'Grading error: ' + err.message, 'danger');
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Submit Assessment';
+      }
+    }
+
+    function renderResults(data) {
+      // Hide questions, actions & jump nav
+      document.getElementById('quizContent').style.display = 'none';
+      document.getElementById('quizActions').style.display = 'none';
+      document.getElementById('quizProgressContainer').style.display = 'none';
+      document.getElementById('questionNavContainer').style.display = 'none';
+      document.getElementById('quizTimerBadge').style.display = 'none';
+
+      const resultsPanel = document.getElementById('quizResultsPanel');
+      resultsPanel.style.display = 'block';
+
+      // Set score stats
+      document.getElementById('finalScore').textContent = data.score;
+      document.getElementById('finalTotal').textContent = data.totalQuestions;
+      document.getElementById('finalPercentage').textContent = `Final Score: ${data.percentage}%`;
+
+      // Pass/Fail badge & icon
+      const iconEl = document.getElementById('scoreIcon');
+      const titleEl = document.getElementById('scoreTitle');
+      const badgeEl = document.getElementById('passStatusBadge');
+
+      if (data.passed) {
+        iconEl.textContent = '🏆';
+        titleEl.textContent = 'Mastery Achieved!';
+        badgeEl.textContent = 'Passed (≥ 70%)';
+        badgeEl.style.backgroundColor = '#ecfdf5';
+        badgeEl.style.color = '#065f46';
+        badgeEl.style.border = '1px solid #a7f3d0';
+      } else {
+        iconEl.textContent = '📚';
+        titleEl.textContent = 'Review & Retake Recommended';
+        badgeEl.textContent = 'Needs Review (< 70%)';
+        badgeEl.style.backgroundColor = '#fef2f2';
+        badgeEl.style.color = '#991b1b';
+        badgeEl.style.border = '1px solid #fecaca';
+      }
+
+      // Time summary
+      const mins = Math.floor(data.timeSpentSeconds / 60);
+      const secs = data.timeSpentSeconds % 60;
+      document.getElementById('timeSpentSummary').textContent = `⏱ Completed in ${mins}m ${secs}s`;
+
+      // Set up AI Tutor Review button with contextual question prompt
+      const missedQuestions = (data.review || []).filter(r => !r.isCorrect);
+      const tutorBtn = document.getElementById('askTutorAboutQuizBtn');
+      if (tutorBtn) {
+        if (missedQuestions.length > 0) {
+          const missedList = missedQuestions.map(m => `"${m.question}"`).join(' and ');
+          const prompt = `I took the "${currentQuiz.courseTitle}" assessment and struggled with the following questions: ${missedList}. Can you break down the core concepts behind them and explain why the correct answers make sense?`;
+          tutorBtn.href = `/tutor.html?question=${encodeURIComponent(prompt)}`;
+          tutorBtn.textContent = `🤖 Review ${missedQuestions.length} Mistakes with AI Tutor`;
+        } else {
+          const prompt = `I scored 100% on the "${currentQuiz.courseTitle}" assessment! What advanced topics or real-world projects should I tackle next to deepen my skills?`;
+          tutorBtn.href = `/tutor.html?question=${encodeURIComponent(prompt)}`;
+          tutorBtn.textContent = '🤖 Explore Next Steps with AI Tutor';
+        }
+      }
+
+      // Render Question-by-Question Review
+      const reviewContainer = document.getElementById('answerReviewList');
+      reviewContainer.innerHTML = (data.review || []).map((item, i) => `
+        <div style="padding: 18px 20px; border: 1px solid ${item.isCorrect ? '#a7f3d0' : '#fecaca'}; background-color: ${item.isCorrect ? '#ecfdf5' : '#fef2f2'}; border-radius: var(--radius-sm);">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
+            <div style="font-weight: 700; font-size: 15px; color: var(--text-main); line-height: 1.4;">
+              ${i + 1}. ${escapeHtml(item.question)}
+            </div>
+            <span style="font-size: 12px; font-weight: 700; padding: 2px 8px; border-radius: 4px; background: ${item.isCorrect ? '#10b981' : '#ef4444'}; color: #ffffff;">
+              ${item.isCorrect ? 'Correct +1' : 'Incorrect 0'}
+            </span>
+          </div>
+
+          <div style="font-size: 14px; margin-bottom: 6px;">
+            <strong style="color: var(--text-main);">Your Answer:</strong> 
+            <span style="color: ${item.isCorrect ? '#065f46' : '#991b1b'}; font-weight: 600;">
+              ${item.isCorrect ? '✔ ' : '✖ '} ${escapeHtml(item.selectedText || 'Not answered')}
+            </span>
+          </div>
+
+          ${!item.isCorrect ? `
+            <div style="font-size: 14px; color: #065f46; margin-bottom: 6px;">
+              <strong style="color: var(--text-main);">Correct Answer:</strong> 
+              <span style="font-weight: 600;">✔ ${escapeHtml(item.correctText)}</span>
+            </div>
+          ` : ''}
+
+          <div style="font-size: 13px; color: var(--text-muted); margin-top: 8px; background: rgba(255,255,255,0.7); padding: 8px 12px; border-radius: 4px; border-left: 3px solid ${item.isCorrect ? '#10b981' : '#ef4444'};">
+            💡 <strong>Explanation:</strong> ${escapeHtml(item.explanation)}
+          </div>
+        </div>
+      `).join('');
+
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // Submit button event
+    document.getElementById('submitQuizBtn').addEventListener('click', () => {
+      submitAssessment(false);
+    });
+
+    // Retake Quiz button
+    document.getElementById('retryQuizBtn').addEventListener('click', () => {
+      document.getElementById('quizResultsPanel').style.display = 'none';
+      document.getElementById('quizContent').style.display = 'block';
+      document.getElementById('quizActions').style.display = 'flex';
+      const submitBtn = document.getElementById('submitQuizBtn');
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Submit Assessment';
+      renderQuizQuestions();
+      startQuizTimer();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  </script>
+</body>
+</html>

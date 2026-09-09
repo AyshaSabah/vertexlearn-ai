@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Instructor Studio - VertexLearn AI</title>
+  <meta name="description" content="Instructor portal to author courses, publish lessons, broadcast announcements, and auto-generate AI quizzes.">
+  <link rel="stylesheet" href="/css/style.css">
+  <style>
+    .portal-header {
+      background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%);
+      color: #ffffff;
+      padding: 40px 0;
+      margin-bottom: 30px;
+    }
+    .portal-badge {
+      background: rgba(99, 102, 241, 0.3);
+      border: 1px solid #818cf8;
+      color: #c7d2fe;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 4px 12px;
+      border-radius: 9999px;
+      display: inline-block;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+    .instructor-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 24px;
+    }
+    @media (max-width: 900px) {
+      .instructor-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+    .status-badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 9999px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+    .status-approved { background: #dcfce7; color: #166534; }
+    .status-pending { background: #fef3c7; color: #92400e; }
+    .status-rejected { background: #fee2e2; color: #991b1b; }
+    .lesson-item-box {
+      background: #f8fafc;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 12px;
+      margin-bottom: 8px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navigation -->
+  <nav class="navbar">
+    <div class="container navbar-container">
+      <a href="/" class="brand">
+        <span class="brand-icon">🎓</span>
+        <span class="brand-name">VertexLearn <span class="brand-badge">AI</span></span>
+      </a>
+      <ul class="nav-links">
+        <li><a href="/courses.html">Courses</a></li>
+        <li><a href="/tutor.html">AI Tutor</a></li>
+        <li><a href="/study-tools.html">Study Tools</a></li>
+      </ul>
+      <div class="nav-actions"></div>
+      <button class="mobile-menu-btn" aria-label="Toggle menu">☰</button>
+    </div>
+  </nav>
+
+  <!-- Instructor Header Banner -->
+  <header class="portal-header">
+    <div class="container">
+      <span class="portal-badge">Instructor Studio</span>
+      <h1 style="font-size: 28px; margin-bottom: 8px; font-weight: 800;">Course Authoring & Management</h1>
+      <p style="color: #cbd5e1; max-width: 650px;">
+        Design curricula, publish announcements, manage video lessons, and leverage Gemini AI to auto-generate rich multiple-choice assessment quizzes.
+      </p>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="container" style="flex: 1; margin-bottom: 50px;">
+    
+    <!-- Notification Alert -->
+    <div id="alertBox"></div>
+
+    <!-- Quick Stats Bar -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px;">
+      <div class="card" style="padding: 16px;">
+        <div style="color: var(--text-muted); font-size: 12px; font-weight: 600;">ACTIVE COURSES</div>
+        <div id="statTotalCourses" style="font-size: 26px; font-weight: 800; color: var(--text-main); margin-top: 4px;">0</div>
+      </div>
+      <div class="card" style="padding: 16px;">
+        <div style="color: var(--text-muted); font-size: 12px; font-weight: 600;">PENDING APPROVAL</div>
+        <div id="statPendingCourses" style="font-size: 26px; font-weight: 800; color: var(--warning); margin-top: 4px;">0</div>
+      </div>
+      <div class="card" style="padding: 16px;">
+        <div style="color: var(--text-muted); font-size: 12px; font-weight: 600;">TOTAL LESSONS PUBLISHED</div>
+        <div id="statTotalLessons" style="font-size: 26px; font-weight: 800; color: var(--primary); margin-top: 4px;">0</div>
+      </div>
+    </div>
+
+    <div class="instructor-grid">
+      <!-- Left Column: Courses list and Create course form -->
+      <section>
+        
+        <!-- Courses List Card -->
+        <div class="card" style="padding: 24px; margin-bottom: 24px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+            <h2 style="font-size: 18px; font-weight: 700;">Curriculum Catalog</h2>
+            <button id="showCreateBtn" class="btn btn-primary btn-sm">+ Create New Course</button>
+          </div>
+          
+          <div id="coursesTableContainer">
+            <div style="text-align: center; padding: 30px; color: var(--text-muted);">Loading courses...</div>
+          </div>
+        </div>
+
+        <!-- Create / Draft Course Form -->
+        <div id="createCourseCard" class="card" style="padding: 24px; display: none;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+            <h2 style="font-size: 18px; font-weight: 700;">Author New Course</h2>
+            <button id="cancelCreateBtn" class="btn btn-outline btn-sm">Cancel</button>
+          </div>
+
+          <form id="createCourseForm">
+            <div class="form-group" style="margin-bottom: 14px;">
+              <label for="courseTitle" style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 4px;">Course Title</label>
+              <input type="text" id="courseTitle" class="form-control" placeholder="e.g., Full-Stack TypeScript with Express" required>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px;">
+              <div>
+                <label for="courseCategory" style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 4px;">Category</label>
+                <select id="courseCategory" class="form-control">
+                  <option value="Web Development">Web Development</option>
+                  <option value="Frontend Engineering">Frontend Engineering</option>
+                  <option value="Backend Development">Backend Development</option>
+                  <option value="Database Systems">Database Systems</option>
+                  <option value="DevOps & Cloud">DevOps & Cloud</option>
+                </select>
+              </div>
+              <div>
+                <label for="courseDifficulty" style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 4px;">Difficulty Level</label>
+                <select id="courseDifficulty" class="form-control">
+                  <option value="Beginner">Beginner</option>
+                  <option value="Intermediate" selected>Intermediate</option>
+                  <option value="Advanced">Advanced</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 14px;">
+              <label for="courseDescription" style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 4px;">Description & Overview</label>
+              <textarea id="courseDescription" class="form-control" rows="3" placeholder="Explain what students will learn, prerequisites, and project outcomes..." required></textarea>
+            </div>
+
+            <!-- Initial Lessons Section -->
+            <div style="margin-bottom: 18px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                <label style="font-size: 13px; font-weight: 600;">Course Lessons (Modules)</label>
+                <button type="button" id="addLessonBtn" class="btn btn-outline btn-sm" style="font-size: 12px;">+ Add Another Lesson</button>
+              </div>
+              <div id="lessonsContainer">
+                <div class="lesson-item-box">
+                  <input type="text" class="form-control lesson-title" placeholder="Lesson 1: Introduction and Core Setup" style="margin-bottom: 6px;" required>
+                  <textarea class="form-control lesson-content" rows="3" placeholder="Lesson syllabus notes, code examples, and technical concepts..." required></textarea>
+                </div>
+              </div>
+            </div>
+
+            <div style="display: flex; justify-content: flex-end; gap: 10px;">
+              <button type="submit" id="saveCourseSubmitBtn" class="btn btn-primary">Submit Course for Review</button>
+            </div>
+          </form>
+        </div>
+
+      </section>
+
+      <!-- Right Column: AI Tools & Announcement Broadcaster -->
+      <section>
+        
+        <!-- Broadcast Announcement Card -->
+        <div class="card" style="padding: 24px; margin-bottom: 24px;">
+          <h3 style="font-size: 16px; font-weight: 700; margin-bottom: 12px; display: flex; align-items: center; gap: 6px;">
+            <span>📢</span> Post Course Announcement
+          </h3>
+          <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 14px;">
+            Send study reminders, office hours notifications, or exam prep alerts to all enrolled students.
+          </p>
+          <form id="announcementForm">
+            <div class="form-group" style="margin-bottom: 12px;">
+              <label for="announceCourseSelect" style="display: block; font-size: 12px; font-weight: 600; margin-bottom: 4px;">Target Course</label>
+              <select id="announceCourseSelect" class="form-control" required>
+                <option value="">Select a course...</option>
+              </select>
+            </div>
+            <div class="form-group" style="margin-bottom: 12px;">
+              <label for="announceTitle" style="display: block; font-size: 12px; font-weight: 600; margin-bottom: 4px;">Title</label>
+              <input type="text" id="announceTitle" class="form-control" placeholder="e.g., Live Q&A Office Hours on Thursday" required>
+            </div>
+            <div class="form-group" style="margin-bottom: 14px;">
+              <label for="announceContent" style="display: block; font-size: 12px; font-weight: 600; margin-bottom: 4px;">Announcement Message</label>
+              <textarea id="announceContent" class="form-control" rows="3" placeholder="Share your message with students..." required></textarea>
+            </div>
+            <button type="submit" id="postAnnounceBtn" class="btn btn-primary btn-sm" style="width: 100%;">Broadcast Announcement</button>
+          </form>
+        </div>
+
+        <!-- AI Assessment Quiz Generator Card (FR-A5) -->
+        <div class="card" style="padding: 24px; border: 1px solid #c7d2fe; background: linear-gradient(180deg, #ffffff 0%, #f5f3ff 100%);">
+          <h3 style="font-size: 16px; font-weight: 700; color: var(--accent-ai); margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
+            <span>✨</span> Gemini AI Quiz Generator
+          </h3>
+          <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 14px;">
+            Paste any lecture transcript or syllabus draft. Gemini 3.8 Flash will auto-generate 5 multiple choice questions with pedagogical explanations.
+          </p>
+          <form id="aiQuizGenForm">
+            <div class="form-group" style="margin-bottom: 10px;">
+              <label for="aiQuizTopic" style="display: block; font-size: 12px; font-weight: 600; margin-bottom: 4px;">Course/Lecture Topic</label>
+              <input type="text" id="aiQuizTopic" class="form-control" placeholder="e.g. Asynchronous JavaScript & Promises" required>
+            </div>
+            <div class="form-group" style="margin-bottom: 12px;">
+              <label for="aiQuizText" style="display: block; font-size: 12px; font-weight: 600; margin-bottom: 4px;">Lecture Content / Transcript Excerpt</label>
+              <textarea id="aiQuizText" class="form-control" rows="4" placeholder="Paste your lesson notes or transcript here..." required></textarea>
+            </div>
+            <button type="submit" id="generateQuizBtn" class="btn btn-primary btn-sm" style="width: 100%; background: var(--accent-ai); border-color: var(--accent-ai);">
+              Generate 5 Quiz MCQs ✨
+            </button>
+          </form>
+
+          <!-- Generated Questions Preview -->
+          <div id="generatedQuestionsContainer" style="margin-top: 16px; display: none;">
+            <h4 style="font-size: 13px; font-weight: 700; margin-bottom: 8px;">Generated Assessment Questions:</h4>
+            <div id="generatedQuestionsList" style="max-height: 280px; overflow-y: auto; font-size: 12px; line-height: 1.5; background: #ffffff; padding: 12px; border-radius: 6px; border: 1px solid var(--border-color);"></div>
+          </div>
+        </div>
+
+      </section>
+    </div>
+
+  </main>
+
+  <footer class="footer">
+    <div class="container footer-content">
+      <div>&copy; 2026 VertexLearn AI. Empowering next-generation engineers.</div>
+    </div>
+  </footer>
+
+  <script src="/js/auth.js"></script>
+  <script src="/js/main.js"></script>
+  <script>
+    let allCourses = [];
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      // Guard instructor page
+      if (!isAuthenticated()) {
+        window.location.href = '/login.html?redirect=/instructor.html';
+        return;
+      }
+
+      const role = getUserRole();
+      if (role !== 'instructor' && role !== 'admin') {
+        showAlert('alertBox', 'Access restricted: You must have an Instructor or Admin role to access Instructor Studio. Use the demo switcher in the header to switch to Dr. Elena (Instructor).', 'warning');
+      }
+
+      await loadCourses();
+      setupEventListeners();
+    });
+
+    async function loadCourses() {
+      try {
+        const res = await fetch('/api/courses');
+        const data = await res.json();
+        allCourses = data.courses || [];
+        renderCoursesTable(allCourses);
+        populateAnnounceDropdown(allCourses);
+        updateStats(allCourses);
+      } catch (err) {
+        console.error('Error loading courses:', err);
+        showAlert('alertBox', 'Failed to load courses catalogue.', 'danger');
+      }
+    }
+
+    function updateStats(courses) {
+      document.getElementById('statTotalCourses').textContent = courses.length;
+      const pending = courses.filter(c => c.status === 'pending').length;
+      document.getElementById('statPendingCourses').textContent = pending;
+      
+      let totalLessons = 0;
+      courses.forEach(c => totalLessons += (c.lessons ? c.lessons.length : 0));
+      document.getElementById('statTotalLessons').textContent = totalLessons;
+    }
+
+    function renderCoursesTable(courses) {
+      const container = document.getElementById('coursesTableContainer');
+      if (!courses.length) {
+        container.innerHTML = '<div style="text-align: center; padding: 20px; color: var(--text-muted);">No courses found. Create your first course below!</div>';
+        return;
+      }
+
+      let html = `
+        <div style="overflow-x: auto;">
+          <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 13px;">
+            <thead>
+              <tr style="border-bottom: 2px solid var(--border-color); color: var(--text-muted);">
+                <th style="padding: 10px;">Course Title</th>
+                <th style="padding: 10px;">Category</th>
+                <th style="padding: 10px;">Status</th>
+                <th style="padding: 10px;">Lessons</th>
+                <th style="padding: 10px;">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+      `;
+
+      courses.forEach(c => {
+        const status = c.status || 'approved';
+        const statusClass = status === 'approved' ? 'status-approved' :
+                            status === 'pending' ? 'status-pending' : 'status-rejected';
+        
+        html += `
+          <tr style="border-bottom: 1px solid var(--border-color);">
+            <td style="padding: 12px 10px; font-weight: 600;">
+              <a href="/course.html?id=${encodeURIComponent(c.id)}" target="_blank" style="color: var(--text-main); text-decoration: underline;">
+                ${escapeHtml(c.title)}
+              </a>
+            </td>
+            <td style="padding: 12px 10px; color: var(--text-muted);">${escapeHtml(c.category || 'General')}</td>
+            <td style="padding: 12px 10px;">
+              <span class="status-badge ${statusClass}">${status}</span>
+            </td>
+            <td style="padding: 12px 10px;">${c.lessons ? c.lessons.length : 0} modules</td>
+            <td style="padding: 12px 10px;">
+              <a href="/course.html?id=${encodeURIComponent(c.id)}" class="btn btn-outline btn-sm" style="font-size: 11px; padding: 3px 8px;">View Syllabus</a>
+            </td>
+          </tr>
+        `;
+      });
+
+      html += `</tbody></table></div>`;
+      container.innerHTML = html;
+    }
+
+    function populateAnnounceDropdown(courses) {
+      const select = document.getElementById('announceCourseSelect');
+      select.innerHTML = '<option value="">Select a course...</option>';
+      courses.forEach(c => {
+        const opt = document.createElement('option');
+        opt.value = c.id;
+        opt.textContent = c.title;
+        select.appendChild(opt);
+      });
+    }
+
+    function setupEventListeners() {
+      // Toggle create course form
+      const showCreateBtn = document.getElementById('showCreateBtn');
+      const cancelCreateBtn = document.getElementById('cancelCreateBtn');
+      const createCourseCard = document.getElementById('createCourseCard');
+
+      if (showCreateBtn && createCourseCard && cancelCreateBtn) {
+        showCreateBtn.addEventListener('click', () => {
+          createCourseCard.style.display = 'block';
+          createCourseCard.scrollIntoView({ behavior: 'smooth' });
+        });
+        cancelCreateBtn.addEventListener('click', () => {
+          createCourseCard.style.display = 'none';
+        });
+      }
+
+      // Add lesson row
+      const addLessonBtn = document.getElementById('addLessonBtn');
+      const lessonsContainer = document.getElementById('lessonsContainer');
+      if (addLessonBtn && lessonsContainer) {
+        addLessonBtn.addEventListener('click', () => {
+          const count = lessonsContainer.querySelectorAll('.lesson-item-box').length + 1;
+          const box = document.createElement('div');
+          box.className = 'lesson-item-box';
+          box.innerHTML = `
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+              <span style="font-size: 12px; font-weight: 700; color: var(--text-muted);">Lesson ${count}</span>
+              <button type="button" class="btn btn-outline btn-sm remove-lesson-btn" style="color: var(--danger); font-size: 11px; padding: 2px 6px;">Remove</button>
+            </div>
+            <input type="text" class="form-control lesson-title" placeholder="Lesson ${count}: Title" style="margin-bottom: 6px;" required>
+            <textarea class="form-control lesson-content" rows="3" placeholder="Lesson notes, code examples, concepts..." required></textarea>
+          `;
+          lessonsContainer.appendChild(box);
+
+          box.querySelector('.remove-lesson-btn').addEventListener('click', () => {
+            box.remove();
+          });
+        });
+      }
+
+      // Submit Create Course Form
+      const createCourseForm = document.getElementById('createCourseForm');
+      if (createCourseForm) {
+        createCourseForm.addEventListener('submit', async (e) => {
+          e.preventDefault();
+          const title = document.getElementById('courseTitle').value.trim();
+          const category = document.getElementById('courseCategory').value;
+          const difficulty = document.getElementById('courseDifficulty').value;
+          const description = document.getElementById('courseDescription').value.trim();
+
+          const lessonBoxes = document.querySelectorAll('#lessonsContainer .lesson-item-box');
+          const lessons = [];
+          lessonBoxes.forEach((b, idx) => {
+            const lTitle = b.querySelector('.lesson-title').value.trim();
+            const lContent = b.querySelector('.lesson-content').value.trim();
+            if (lTitle) {
+              lessons.push({
+                id: `l-${Date.now()}-${idx}`,
+                title: lTitle,
+                content: lContent,
+                videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ'
+              });
+            }
+          });
+
+          const submitBtn = document.getElementById('saveCourseSubmitBtn');
+          submitBtn.disabled = true;
+          submitBtn.textContent = 'Submitting...';
+
+          try {
+            const res = await authFetch('/api/courses', {
+              method: 'POST',
+              body: JSON.stringify({
+                title,
+                category,
+                difficulty,
+                description,
+                lessons
+              })
+            });
+
+            const data = await res.json();
+            if (res.ok && data.success) {
+              showAlert('alertBox', `Course "${title}" created successfully! Status: ${data.course.status}`, 'success');
+              createCourseForm.reset();
+              createCourseCard.style.display = 'none';
+              await loadCourses();
+            } else {
+              showAlert('alertBox', data.message || 'Failed to create course.', 'danger');
+            }
+          } catch (err) {
+            showAlert('alertBox', err.message || 'Failed to submit course.', 'danger');
+          } finally {
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Submit Course for Review';
+          }
+        });
+      }
+
+      // Announcement broadcast
+      const announcementForm = document.getElementById('announcementForm');
+      if (announcementForm) {
+        announcementForm.addEventListener('submit', async (e) => {
+          e.preventDefault();
+          const courseId = document.getElementById('announceCourseSelect').value;
+          const title = document.getElementById('announceTitle').value.trim();
+          const content = document.getElementById('announceContent').value.trim();
+
+          if (!courseId) {
+            showAlert('alertBox', 'Please select a course to announce to.', 'warning');
+            return;
+          }
+
+          const btn = document.getElementById('postAnnounceBtn');
+          btn.disabled = true;
+          btn.textContent = 'Broadcasting...';
+
+          try {
+            const res = await authFetch(`/api/courses/${encodeURIComponent(courseId)}/announcements`, {
+              method: 'POST',
+              body: JSON.stringify({ title, content })
+            });
+            const data = await res.json();
+            if (res.ok && data.success) {
+              showAlert('alertBox', 'Announcement published to course students!', 'success');
+              announcementForm.reset();
+              await loadCourses();
+            } else {
+              showAlert('alertBox', data.message || 'Failed to publish announcement.', 'danger');
+            }
+          } catch (err) {
+            showAlert('alertBox', err.message || 'Failed to publish announcement.', 'danger');
+          } finally {
+            btn.disabled = false;
+            btn.textContent = 'Broadcast Announcement';
+          }
+        });
+      }
+
+      // AI Quiz Generator
+      const aiQuizGenForm = document.getElementById('aiQuizGenForm');
+      if (aiQuizGenForm) {
+        aiQuizGenForm.addEventListener('submit', async (e) => {
+          e.preventDefault();
+          const topic = document.getElementById('aiQuizTopic').value.trim();
+          const text = document.getElementById('aiQuizText').value.trim();
+          const btn = document.getElementById('generateQuizBtn');
+          const previewContainer = document.getElementById('generatedQuestionsContainer');
+          const previewList = document.getElementById('generatedQuestionsList');
+
+          btn.disabled = true;
+          btn.textContent = 'Generating Questions with Gemini... ✨';
+
+          try {
+            const res = await fetch('/api/ai/generate-quiz', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                courseTitle: topic,
+                lectureContent: text,
+                numQuestions: 5
+              })
+            });
+            const data = await res.json();
+            if (data.success && Array.isArray(data.questions)) {
+              previewContainer.style.display = 'block';
+              let qHtml = '';
+              data.questions.forEach((q, idx) => {
+                qHtml += `
+                  <div style="margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid #e2e8f0;">
+                    <div style="font-weight: 700; color: var(--text-main); margin-bottom: 4px;">Q${idx + 1}: ${escapeHtml(q.question)}</div>
+                    <ul style="padding-left: 18px; margin-bottom: 6px;">
+                      ${q.options.map((opt, optIdx) => `<li style="${optIdx === q.correctAnswer ? 'font-weight: 700; color: var(--success);' : ''}">${escapeHtml(opt)} ${optIdx === q.correctAnswer ? '✓ (Correct)' : ''}</li>`).join('')}
+                    </ul>
+                    <div style="color: var(--text-muted); font-size: 11px;"><em>Rationale:</em> ${escapeHtml(q.explanation || '')}</div>
+                  </div>
+                `;
+              });
+              previewList.innerHTML = qHtml;
+              showAlert('alertBox', 'Successfully generated 5 pedagogical MCQs!', 'success');
+            } else {
+              showAlert('alertBox', 'Could not parse generated questions.', 'danger');
+            }
+          } catch (err) {
+            showAlert('alertBox', 'AI Quiz generation error: ' + err.message, 'danger');
+          } finally {
+            btn.disabled = false;
+            btn.textContent = 'Generate 5 Quiz MCQs ✨';
+          }
+        });
+      }
+    }
+  </script>
+</body>
+</html>

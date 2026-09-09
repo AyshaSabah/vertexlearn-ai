@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Command Center - VertexLearn AI</title>
+  <meta name="description" content="Administrator dashboard for user management, role assignment, course approvals, and platform analytics.">
+  <link rel="stylesheet" href="/css/style.css">
+  <style>
+    .admin-header {
+      background: linear-gradient(135deg, #450a0a 0%, #7f1d1d 100%);
+      color: #ffffff;
+      padding: 40px 0;
+      margin-bottom: 30px;
+    }
+    .admin-badge {
+      background: rgba(239, 68, 68, 0.3);
+      border: 1px solid #f87171;
+      color: #fecaca;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 4px 12px;
+      border-radius: 9999px;
+      display: inline-block;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+    .stat-card {
+      background: #ffffff;
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 20px;
+      box-shadow: var(--shadow-sm);
+    }
+    .stat-num {
+      font-size: 28px;
+      font-weight: 800;
+      color: var(--text-main);
+      margin-top: 4px;
+    }
+    .tab-btn {
+      padding: 10px 18px;
+      font-size: 14px;
+      font-weight: 600;
+      background: none;
+      border: none;
+      border-bottom: 3px solid transparent;
+      cursor: pointer;
+      color: var(--text-muted);
+      transition: all 0.15s ease;
+    }
+    .tab-btn.active {
+      color: #dc2626;
+      border-bottom-color: #dc2626;
+    }
+    .badge-pill {
+      font-size: 11px;
+      padding: 3px 8px;
+      border-radius: 9999px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+    .badge-admin { background: #fee2e2; color: #991b1b; }
+    .badge-instructor { background: #e0e7ff; color: #3730a3; }
+    .badge-student { background: #f1f5f9; color: #334155; }
+    .badge-active { background: #dcfce7; color: #166534; }
+    .badge-suspended { background: #fee2e2; color: #991b1b; }
+  </style>
+</head>
+<body>
+
+  <!-- Navigation -->
+  <nav class="navbar">
+    <div class="container navbar-container">
+      <a href="/" class="brand">
+        <span class="brand-icon">🎓</span>
+        <span class="brand-name">VertexLearn <span class="brand-badge">AI</span></span>
+      </a>
+      <ul class="nav-links">
+        <li><a href="/courses.html">Courses</a></li>
+        <li><a href="/tutor.html">AI Tutor</a></li>
+        <li><a href="/study-tools.html">Study Tools</a></li>
+      </ul>
+      <div class="nav-actions"></div>
+      <button class="mobile-menu-btn" aria-label="Toggle menu">☰</button>
+    </div>
+  </nav>
+
+  <!-- Admin Header Banner -->
+  <header class="admin-header">
+    <div class="container">
+      <span class="admin-badge">Platform Operations</span>
+      <h1 style="font-size: 28px; margin-bottom: 8px; font-weight: 800;">Admin Command Center</h1>
+      <p style="color: #fca5a5; max-width: 650px;">
+        Oversee system users, manage RBAC privileges, inspect platform health telemetry, and review curriculum approval queues.
+      </p>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="container" style="flex: 1; margin-bottom: 50px;">
+    
+    <!-- Notifications -->
+    <div id="alertBox"></div>
+
+    <!-- Analytics Stats Overview -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 24px;">
+      <div class="stat-card">
+        <div style="color: var(--text-muted); font-size: 11px; font-weight: 700;">TOTAL USERS</div>
+        <div id="statTotalUsers" class="stat-num">0</div>
+      </div>
+      <div class="stat-card">
+        <div style="color: var(--text-muted); font-size: 11px; font-weight: 700;">STUDENTS</div>
+        <div id="statTotalStudents" class="stat-num">0</div>
+      </div>
+      <div class="stat-card">
+        <div style="color: var(--text-muted); font-size: 11px; font-weight: 700;">INSTRUCTORS</div>
+        <div id="statTotalInstructors" class="stat-num" style="color: #6366f1;">0</div>
+      </div>
+      <div class="stat-card">
+        <div style="color: var(--text-muted); font-size: 11px; font-weight: 700;">ACTIVE COURSES</div>
+        <div id="statTotalCourses" class="stat-num" style="color: var(--primary);">0</div>
+      </div>
+      <div class="stat-card">
+        <div style="color: var(--text-muted); font-size: 11px; font-weight: 700;">PENDING APPROVALS</div>
+        <div id="statPendingApprovals" class="stat-num" style="color: var(--warning);">0</div>
+      </div>
+    </div>
+
+    <!-- Tabs Navigation -->
+    <div style="border-bottom: 1px solid var(--border-color); margin-bottom: 20px; display: flex; gap: 8px;">
+      <button class="tab-btn active" data-tab="usersTab">👥 User Management & RBAC</button>
+      <button class="tab-btn" data-tab="coursesTab">📚 Course Approval Queue</button>
+      <button class="tab-btn" data-tab="systemTab">⚡ System Status & Telemetry</button>
+    </div>
+
+    <!-- TAB 1: User Management -->
+    <section id="usersTab" class="tab-content">
+      <div class="card" style="padding: 24px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
+          <div>
+            <h2 style="font-size: 18px; font-weight: 700;">User Accounts Directory</h2>
+            <p style="font-size: 13px; color: var(--text-muted);">Manage platform roles, grant instructor access, or suspend suspicious accounts.</p>
+          </div>
+          <div style="display: flex; gap: 8px;">
+            <input type="text" id="userSearchInput" class="form-control" placeholder="Search by name or email..." style="width: 240px; font-size: 13px;">
+            <select id="roleFilterSelect" class="form-control" style="width: 140px; font-size: 13px;">
+              <option value="all">All Roles</option>
+              <option value="student">Students</option>
+              <option value="instructor">Instructors</option>
+              <option value="admin">Admins</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="usersTableContainer">
+          <div style="text-align: center; padding: 30px; color: var(--text-muted);">Loading user records...</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 2: Course Approval Queue -->
+    <section id="coursesTab" class="tab-content" style="display: none;">
+      <div class="card" style="padding: 24px;">
+        <div style="margin-bottom: 16px;">
+          <h2 style="font-size: 18px; font-weight: 700;">Curriculum Approval Queue</h2>
+          <p style="font-size: 13px; color: var(--text-muted);">Review submitted courses before publishing them to the public catalog.</p>
+        </div>
+
+        <div id="coursesApprovalContainer">
+          <div style="text-align: center; padding: 30px; color: var(--text-muted);">Loading curriculum queue...</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 3: System Status & Telemetry -->
+    <section id="systemTab" class="tab-content" style="display: none;">
+      <div class="card" style="padding: 24px;">
+        <h2 style="font-size: 18px; font-weight: 700; margin-bottom: 16px;">Platform Diagnostics & Architecture</h2>
+        
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px;">
+          <div style="background: #f8fafc; border: 1px solid var(--border-color); border-radius: 8px; padding: 16px;">
+            <div style="font-size: 12px; font-weight: 700; color: var(--text-muted); margin-bottom: 6px;">DATA PERSISTENCE LAYER</div>
+            <div style="font-size: 15px; font-weight: 700; color: var(--success); display: flex; align-items: center; gap: 6px;">
+              <span>🟢</span> Hybrid In-Memory & MongoDB Persistence
+            </div>
+            <p style="font-size: 12px; color: var(--text-muted); margin-top: 6px;">
+              Operating seamlessly with memory-backed state stores to guarantee 100% uptime even during database transitions.
+            </p>
+          </div>
+
+          <div style="background: #f8fafc; border: 1px solid var(--border-color); border-radius: 8px; padding: 16px;">
+            <div style="font-size: 12px; font-weight: 700; color: var(--text-muted); margin-bottom: 6px;">AI ACCELERATION ENGINE</div>
+            <div style="font-size: 15px; font-weight: 700; color: var(--accent-ai); display: flex; align-items: center; gap: 6px;">
+              <span>✨</span> Gemini 3.8 Flash SDK Integration
+            </div>
+            <p style="font-size: 12px; color: var(--text-muted); margin-top: 6px;">
+              Server-side intelligence powering the multi-turn conversational AI Tutor, RAG curriculum grounding, and Quiz Generation.
+            </p>
+          </div>
+
+          <div style="background: #f8fafc; border: 1px solid var(--border-color); border-radius: 8px; padding: 16px;">
+            <div style="font-size: 12px; font-weight: 700; color: var(--text-muted); margin-bottom: 6px;">SECURITY & ROLE CONTROL (RBAC)</div>
+            <div style="font-size: 15px; font-weight: 700; color: #dc2626; display: flex; align-items: center; gap: 6px;">
+              <span>🛡️</span> JWT Bearer Authentication & RBAC Gate
+            </div>
+            <p style="font-size: 12px; color: var(--text-muted); margin-top: 6px;">
+              Enforces strict server-side verification across student, instructor, and superuser administrative roles.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="footer">
+    <div class="container footer-content">
+      <div>&copy; 2026 VertexLearn AI. Production Educational Platform.</div>
+    </div>
+  </footer>
+
+  <script src="/js/auth.js"></script>
+  <script src="/js/main.js"></script>
+  <script>
+    let usersList = [];
+    let coursesList = [];
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      // Guard admin page
+      if (!isAuthenticated()) {
+        window.location.href = '/login.html?redirect=/admin.html';
+        return;
+      }
+
+      if (!isAdmin()) {
+        showAlert('alertBox', 'Administrative access required. Use the demo switcher in the header to switch to Alex Rivera (Admin).', 'warning');
+      }
+
+      setupTabs();
+      await loadAnalytics();
+      await loadUsers();
+      await loadCourses();
+      setupFilters();
+    });
+
+    function setupTabs() {
+      const tabBtns = document.querySelectorAll('.tab-btn');
+      const tabContents = document.querySelectorAll('.tab-content');
+
+      tabBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+          tabBtns.forEach(b => b.classList.remove('active'));
+          tabContents.forEach(c => c.style.display = 'none');
+
+          btn.classList.add('active');
+          const targetId = btn.getAttribute('data-tab');
+          const targetEl = document.getElementById(targetId);
+          if (targetEl) {
+            targetEl.style.display = 'block';
+          }
+        });
+      });
+    }
+
+    async function loadAnalytics() {
+      try {
+        const res = await authFetch('/api/admin/analytics/overview');
+        if (res.ok) {
+          const data = await res.json();
+          document.getElementById('statTotalUsers').textContent = data.totalUsers || 0;
+          document.getElementById('statTotalStudents').textContent = data.roles ? data.roles.student : 0;
+          document.getElementById('statTotalInstructors').textContent = data.roles ? data.roles.instructor : 0;
+          document.getElementById('statTotalCourses').textContent = data.totalCourses || 0;
+          document.getElementById('statPendingApprovals').textContent = data.coursesByStatus ? data.coursesByStatus.pending : 0;
+        }
+      } catch (err) {
+        console.warn('Analytics fetch error:', err);
+      }
+    }
+
+    async function loadUsers() {
+      try {
+        const res = await authFetch('/api/admin/users');
+        if (res.ok) {
+          const data = await res.json();
+          usersList = data.users || [];
+          renderUsersTable(usersList);
+        } else {
+          showAlert('alertBox', 'Failed to load users directory. Ensure admin permissions.', 'danger');
+        }
+      } catch (err) {
+        console.error('Failed to fetch users:', err);
+      }
+    }
+
+    function renderUsersTable(users) {
+      const container = document.getElementById('usersTableContainer');
+      if (!users.length) {
+        container.innerHTML = '<div style="text-align: center; padding: 20px; color: var(--text-muted);">No users found.</div>';
+        return;
+      }
+
+      let html = `
+        <div style="overflow-x: auto;">
+          <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 13px;">
+            <thead>
+              <tr style="border-bottom: 2px solid var(--border-color); color: var(--text-muted);">
+                <th style="padding: 10px;">Name</th>
+                <th style="padding: 10px;">Email</th>
+                <th style="padding: 10px;">Current Role</th>
+                <th style="padding: 10px;">Status</th>
+                <th style="padding: 10px; text-align: right;">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+      `;
+
+      users.forEach(u => {
+        const roleClass = u.role === 'admin' ? 'badge-admin' :
+                          u.role === 'instructor' ? 'badge-instructor' : 'badge-student';
+        const isActive = u.isActive !== false;
+        const statusClass = isActive ? 'badge-active' : 'badge-suspended';
+        const statusLabel = isActive ? 'Active' : 'Suspended';
+
+        html += `
+          <tr style="border-bottom: 1px solid var(--border-color);">
+            <td style="padding: 10px; font-weight: 600;">${escapeHtml(u.name || 'User')}</td>
+            <td style="padding: 10px; color: var(--text-muted);">${escapeHtml(u.email || '')}</td>
+            <td style="padding: 10px;">
+              <span class="badge-pill ${roleClass}">${escapeHtml(u.role || 'student')}</span>
+            </td>
+            <td style="padding: 10px;">
+              <span class="badge-pill ${statusClass}">${statusLabel}</span>
+            </td>
+            <td style="padding: 10px; text-align: right;">
+              <div style="display: inline-flex; gap: 6px; align-items: center;">
+                <select class="form-control change-role-select" data-id="${u.id}" style="font-size: 12px; padding: 4px 6px; width: 110px;">
+                  <option value="student" ${u.role === 'student' ? 'selected' : ''}>Student</option>
+                  <option value="instructor" ${u.role === 'instructor' ? 'selected' : ''}>Instructor</option>
+                  <option value="admin" ${u.role === 'admin' ? 'selected' : ''}>Admin</option>
+                </select>
+                <button class="btn btn-outline btn-sm toggle-suspend-btn" data-id="${u.id}" data-active="${isActive}" style="font-size: 11px; padding: 4px 8px; color: ${isActive ? 'var(--danger)' : 'var(--success)'};">
+                  ${isActive ? 'Suspend' : 'Activate'}
+                </button>
+              </div>
+            </td>
+          </tr>
+        `;
+      });
+
+      html += `</tbody></table></div>`;
+      container.innerHTML = html;
+
+      // Bind change-role listener
+      container.querySelectorAll('.change-role-select').forEach(sel => {
+        sel.addEventListener('change', async (e) => {
+          const userId = sel.getAttribute('data-id');
+          const newRole = sel.value;
+          await updateRole(userId, newRole);
+        });
+      });
+
+      // Bind toggle suspend listener
+      container.querySelectorAll('.toggle-suspend-btn').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const userId = btn.getAttribute('data-id');
+          const currentlyActive = btn.getAttribute('data-active') === 'true';
+          await toggleSuspend(userId, !currentlyActive);
+        });
+      });
+    }
+
+    async function updateRole(userId, newRole) {
+      try {
+        const res = await authFetch(`/api/admin/users/${encodeURIComponent(userId)}/role`, {
+          method: 'PUT',
+          body: JSON.stringify({ role: newRole })
+        });
+        const data = await res.json();
+        if (res.ok && data.success) {
+          showAlert('alertBox', `User role updated to ${newRole}.`, 'success');
+          await loadUsers();
+          await loadAnalytics();
+        } else {
+          showAlert('alertBox', data.message || 'Failed to update role.', 'danger');
+        }
+      } catch (err) {
+        showAlert('alertBox', err.message || 'Error updating role.', 'danger');
+      }
+    }
+
+    async function toggleSuspend(userId, shouldBeActive) {
+      try {
+        const res = await authFetch(`/api/admin/users/${encodeURIComponent(userId)}/suspend`, {
+          method: 'PUT',
+          body: JSON.stringify({ isActive: shouldBeActive })
+        });
+        const data = await res.json();
+        if (res.ok && data.success) {
+          showAlert('alertBox', `User status updated to ${shouldBeActive ? 'Active' : 'Suspended'}.`, 'success');
+          await loadUsers();
+        } else {
+          showAlert('alertBox', data.message || 'Failed to update status.', 'danger');
+        }
+      } catch (err) {
+        showAlert('alertBox', err.message || 'Error updating status.', 'danger');
+      }
+    }
+
+    async function loadCourses() {
+      try {
+        const res = await fetch('/api/courses');
+        const data = await res.json();
+        coursesList = data.courses || [];
+        renderCoursesApproval(coursesList);
+      } catch (err) {
+        console.error('Failed to load courses:', err);
+      }
+    }
+
+    function renderCoursesApproval(courses) {
+      const container = document.getElementById('coursesApprovalContainer');
+      if (!courses.length) {
+        container.innerHTML = '<div style="text-align: center; padding: 20px; color: var(--text-muted);">No courses in the queue.</div>';
+        return;
+      }
+
+      let html = `
+        <div style="overflow-x: auto;">
+          <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 13px;">
+            <thead>
+              <tr style="border-bottom: 2px solid var(--border-color); color: var(--text-muted);">
+                <th style="padding: 10px;">Course</th>
+                <th style="padding: 10px;">Instructor</th>
+                <th style="padding: 10px;">Category</th>
+                <th style="padding: 10px;">Current Status</th>
+                <th style="padding: 10px; text-align: right;">Decision</th>
+              </tr>
+            </thead>
+            <tbody>
+      `;
+
+      courses.forEach(c => {
+        const status = c.status || 'approved';
+        const statusColor = status === 'approved' ? 'background: #dcfce7; color: #166534;' :
+                            status === 'pending' ? 'background: #fef3c7; color: #92400e;' :
+                            'background: #fee2e2; color: #991b1b;';
+
+        html += `
+          <tr style="border-bottom: 1px solid var(--border-color);">
+            <td style="padding: 10px; font-weight: 600;">
+              <a href="/course.html?id=${encodeURIComponent(c.id)}" target="_blank" style="color: var(--text-main); text-decoration: underline;">
+                ${escapeHtml(c.title)}
+              </a>
+            </td>
+            <td style="padding: 10px; color: var(--text-muted);">${escapeHtml(c.instructorName || 'Platform Team')}</td>
+            <td style="padding: 10px; color: var(--text-muted);">${escapeHtml(c.category || 'General')}</td>
+            <td style="padding: 10px;">
+              <span style="font-size: 11px; padding: 3px 8px; border-radius: 9999px; font-weight: 700; text-transform: uppercase; ${statusColor}">
+                ${status}
+              </span>
+            </td>
+            <td style="padding: 10px; text-align: right;">
+              <div style="display: inline-flex; gap: 6px;">
+                <button class="btn btn-outline btn-sm course-status-btn" data-id="${c.id}" data-status="approved" style="color: var(--success); font-size: 11px; padding: 4px 8px;">
+                  ✓ Approve
+                </button>
+                <button class="btn btn-outline btn-sm course-status-btn" data-id="${c.id}" data-status="rejected" style="color: var(--danger); font-size: 11px; padding: 4px 8px;">
+                  ✕ Reject
+                </button>
+              </div>
+            </td>
+          </tr>
+        `;
+      });
+
+      html += `</tbody></table></div>`;
+      container.innerHTML = html;
+
+      container.querySelectorAll('.course-status-btn').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const courseId = btn.getAttribute('data-id');
+          const newStatus = btn.getAttribute('data-status');
+          await updateCourseStatus(courseId, newStatus);
+        });
+      });
+    }
+
+    async function updateCourseStatus(courseId, status) {
+      try {
+        const res = await authFetch(`/api/courses/${encodeURIComponent(courseId)}/status`, {
+          method: 'PUT',
+          body: JSON.stringify({ status })
+        });
+        const data = await res.json();
+        if (res.ok && data.success) {
+          showAlert('alertBox', `Course status updated to ${status}.`, 'success');
+          await loadCourses();
+          await loadAnalytics();
+        } else {
+          showAlert('alertBox', data.message || 'Failed to update course status.', 'danger');
+        }
+      } catch (err) {
+        showAlert('alertBox', err.message || 'Error updating status.', 'danger');
+      }
+    }
+
+    function setupFilters() {
+      const searchInput = document.getElementById('userSearchInput');
+      const roleFilter = document.getElementById('roleFilterSelect');
+
+      function filterUsers() {
+        const query = searchInput.value.toLowerCase().trim();
+        const role = roleFilter.value;
+
+        const filtered = usersList.filter(u => {
+          const matchesQuery = !query || (u.name && u.name.toLowerCase().includes(query)) || (u.email && u.email.toLowerCase().includes(query));
+          const matchesRole = role === 'all' || u.role === role;
+          return matchesQuery && matchesRole;
+        });
+
+        renderUsersTable(filtered);
+      }
+
+      if (searchInput) searchInput.addEventListener('input', filterUsers);
+      if (roleFilter) roleFilter.addEventListener('change', filterUsers);
+    }
+  </script>
+</body>
+</html>

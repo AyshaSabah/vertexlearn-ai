@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Student Dashboard - VertexLearn AI</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+  <!-- Navigation Bar -->
+  <header class="navbar">
+    <div class="container nav-container">
+      <a href="/" class="nav-brand">
+        <span>🎓</span>
+        <span>VertexLearn</span>
+        <span class="brand-badge">AI</span>
+      </a>
+
+      <button class="mobile-menu-btn" aria-label="Toggle Navigation">☰</button>
+
+      <ul class="nav-links">
+        <li><a href="/dashboard.html" class="active">Dashboard</a></li>
+        <li><a href="/courses.html">Courses</a></li>
+        <li><a href="/tutor.html">AI Tutor</a></li>
+        <li><a href="/study-tools.html">Study Tools</a></li>
+      </ul>
+
+      <div class="nav-actions">
+        <!-- Injected by main.js -->
+      </div>
+    </div>
+  </header>
+
+  <!-- Dashboard Main Content -->
+  <main class="container" style="margin-top: 20px; margin-bottom: 60px;">
+    
+    <!-- Top Greeting & Action Header -->
+    <div class="dashboard-header">
+      <div>
+        <h1 id="welcomeTitle" style="font-size: 28px; font-weight: 800; color: var(--text-main);">
+          Welcome back, Student! 👋
+        </h1>
+        <p style="color: var(--text-muted); font-size: 15px; margin-top: 4px;">
+          Track your course completion, review your quiz results, and chat with your AI Tutor.
+        </p>
+      </div>
+
+      <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+        <a href="/tutor.html" class="btn btn-ai">
+          <span>🤖</span> Open Vertex AI Tutor
+        </a>
+        <a href="/courses.html" class="btn btn-primary">
+          <span>📚</span> Browse All Courses
+        </a>
+      </div>
+    </div>
+
+    <!-- Alert placeholder -->
+    <div id="dashboardAlert"></div>
+
+    <!-- Stats Overview Grid -->
+    <div class="grid-4" style="margin-bottom: 32px;">
+      <div class="stat-card">
+        <div class="stat-icon" style="background-color: var(--primary-light); color: var(--primary);">
+          📖
+        </div>
+        <div>
+          <div id="statEnrolledCourses" class="stat-value">0</div>
+          <div class="stat-label">Active Courses</div>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon" style="background-color: var(--success-light); color: var(--success);">
+          ✅
+        </div>
+        <div>
+          <div id="statCompletedLessons" class="stat-value">0</div>
+          <div class="stat-label">Lessons Done</div>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon" style="background-color: #fef3c7; color: #d97706;">
+          🏆
+        </div>
+        <div>
+          <div id="statAverageQuizScore" class="stat-value">0%</div>
+          <div class="stat-label">Avg Quiz Score</div>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon" style="background-color: var(--accent-ai-light); color: var(--accent-ai);">
+          ⚡
+        </div>
+        <div>
+          <div id="statOverallProgress" class="stat-value">0%</div>
+          <div class="stat-label">Total Progress</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main 2-Column Section: Courses & Quizzes -->
+    <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 24px;">
+      
+      <!-- Left Column: Enrolled/Active Courses Progress -->
+      <div>
+        <div class="card-header" style="margin-bottom: 16px;">
+          <h2 style="font-size: 20px; font-weight: 700; color: var(--text-main);">My Course Progress</h2>
+          <a href="/courses.html" style="font-size: 14px; font-weight: 600;">View All &rarr;</a>
+        </div>
+
+        <div id="coursesListContainer" style="display: flex; flex-direction: column; gap: 16px;">
+          <div class="card" style="text-align: center; padding: 40px 20px;">
+            <p style="color: var(--text-muted); margin-bottom: 12px;">Loading your courses and progress...</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Column: Recent Quiz Scores & AI Helper Card -->
+      <div style="display: flex; flex-direction: column; gap: 24px;">
+        
+        <!-- Vertex AI Tutor Promo Card -->
+        <div class="card" style="background: linear-gradient(135deg, #f5f3ff 0%, #eff6ff 100%); border-color: #ddd6fe;">
+          <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
+            <span style="font-size: 24px;">🤖</span>
+            <h3 style="font-size: 18px; font-weight: 700; color: var(--accent-ai);">Need Help Studying?</h3>
+          </div>
+          <p style="font-size: 14px; color: var(--text-muted); margin-bottom: 16px;">
+            Vertex AI Tutor is ready to explain code, fix errors, or generate practice questions tailored to your courses.
+          </p>
+          <a href="/tutor.html" class="btn btn-ai btn-sm btn-block">Chat with AI Tutor</a>
+        </div>
+
+        <!-- Recent Quiz Scores Card -->
+        <div class="card">
+          <div class="card-header" style="margin-bottom: 12px;">
+            <h3 class="card-title" style="font-size: 18px;">Recent Quiz Scores</h3>
+          </div>
+          <div id="quizScoresContainer">
+            <p style="color: var(--text-muted); font-size: 14px;">No quizzes completed yet. Take a quiz to test your knowledge!</p>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <p>VertexLearn AI &copy; 2026 &mdash; Student Learning Management System</p>
+    </div>
+  </footer>
+
+  <script src="/js/auth.js"></script>
+  <script src="/js/main.js"></script>
+  <script src="/js/dashboard.js"></script>
+</body>
+</html>

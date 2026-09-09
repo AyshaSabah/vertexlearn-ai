@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Course Lesson - VertexLearn AI</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+  <!-- Navigation Bar -->
+  <header class="navbar">
+    <div class="container nav-container">
+      <a href="/" class="nav-brand">
+        <span>🎓</span>
+        <span>VertexLearn</span>
+        <span class="brand-badge">AI</span>
+      </a>
+
+      <button class="mobile-menu-btn" aria-label="Toggle Navigation">☰</button>
+
+      <ul class="nav-links">
+        <li><a href="/dashboard.html">Dashboard</a></li>
+        <li><a href="/courses.html" class="active">Courses</a></li>
+        <li><a href="/tutor.html">AI Tutor</a></li>
+        <li><a href="/study-tools.html">Study Tools</a></li>
+      </ul>
+
+      <div class="nav-actions">
+        <!-- Injected by main.js -->
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Course & Lesson Viewer Layout -->
+  <main class="container">
+    
+    <!-- Top breadcrumb bar -->
+    <div style="padding: 16px 0; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); flex-wrap: wrap; gap: 12px;">
+      <div>
+        <a href="/courses.html" style="font-size: 13px; font-weight: 600; color: var(--text-muted); display: inline-flex; align-items: center; gap: 4px;">
+          <span>&larr;</span> Back to All Courses
+        </a>
+        <div style="display: flex; align-items: center; gap: 10px; margin-top: 4px; flex-wrap: wrap;">
+          <h1 id="courseTitleHeader" style="font-size: 24px; font-weight: 800; color: var(--text-main); margin: 0;">Loading Course...</h1>
+          <span id="courseLevelBadge" class="badge" style="background-color: var(--primary-light); color: var(--primary); font-size: 11px;">Beginner</span>
+        </div>
+      </div>
+      <div id="courseQuizLink" style="display: flex; align-items: center; gap: 8px;">
+        <!-- Injected dynamically: Take Quiz button -->
+      </div>
+    </div>
+
+    <!-- Alert placeholder -->
+    <div id="courseAlert" style="margin-top: 16px;"></div>
+
+    <div class="course-layout">
+      
+      <!-- Left Sidebar: Lessons Index & Course Progress -->
+      <aside class="lesson-sidebar">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+          <h3 style="font-size: 15px; font-weight: 700; color: var(--text-main); margin: 0;">Syllabus Outline</h3>
+          <span id="lessonCounterBadge" style="font-size: 12px; color: var(--text-muted); font-weight: 600;">0 lessons</span>
+        </div>
+        
+        <!-- Progress Bar for this Course -->
+        <div class="progress-container" style="margin-bottom: 16px;">
+          <div class="progress-info">
+            <span style="font-size: 12px; font-weight: 600; color: var(--text-main);">Progress</span>
+            <span id="courseProgressPercent" style="font-size: 12px; font-weight: 700; color: var(--primary);">0%</span>
+          </div>
+          <div class="progress-bar-bg" style="height: 7px;">
+            <div id="courseProgressBar" class="progress-bar-fill" style="width: 0%;"></div>
+          </div>
+        </div>
+
+        <!-- Lesson List -->
+        <ul id="lessonList" class="lesson-list">
+          <li style="padding: 12px; color: var(--text-muted); font-size: 14px;">Loading lessons...</li>
+        </ul>
+
+        <!-- Navigation Tips -->
+        <div style="margin-top: 20px; padding: 12px; background-color: var(--bg-main); border-radius: var(--radius-sm); border: 1px dashed var(--border-color); font-size: 11px; color: var(--text-muted);">
+          <strong style="color: var(--text-main);">⌨️ Keyboard Shortcuts:</strong><br>
+          <span style="display: inline-block; margin-top: 4px;">&larr; Previous &nbsp;|&nbsp; &rarr; Next &nbsp;|&nbsp; <kbd style="background: #fff; padding: 1px 4px; border: 1px solid #ccc; border-radius: 3px;">C</kbd> Complete</span>
+        </div>
+      </aside>
+
+      <!-- Right Main: Active Lesson Reader -->
+      <section class="lesson-content-card">
+        
+        <!-- Lesson Header -->
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; flex-wrap: wrap; border-bottom: 1px solid var(--border-color); padding-bottom: 18px; margin-bottom: 24px;">
+          <div>
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+              <span id="lessonCategoryBadge" class="badge badge-primary">Lesson</span>
+              <span id="lessonDurationBadge" style="font-size: 12px; color: var(--text-muted); font-weight: 500;">⏱ 20 min read</span>
+            </div>
+            <h2 id="currentLessonTitle" style="font-size: 26px; font-weight: 800; color: var(--text-main); margin: 0; line-height: 1.3;">
+              Select a Lesson
+            </h2>
+          </div>
+
+          <!-- Mark Completed Button -->
+          <div style="display: flex; gap: 10px; align-items: center;">
+            <button id="markCompletedBtn" class="btn btn-outline" style="font-size: 13px;">
+              <span>⭕</span> Mark as Completed
+            </button>
+          </div>
+        </div>
+
+        <!-- Completion Celebration Banner (shown when course is 100% completed) -->
+        <div id="courseCompletionBanner" style="display: none; background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%); border: 1px solid #a7f3d0; border-radius: var(--radius-sm); padding: 16px 20px; margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+          <div>
+            <div style="font-size: 15px; font-weight: 700; color: #065f46;">🎉 Course Completed!</div>
+            <div style="font-size: 13px; color: #047857; margin-top: 2px;">You have completed all lessons in this curriculum. Test your mastery with the assessment quiz.</div>
+          </div>
+          <a id="takeFinalQuizBtn" href="#" class="btn btn-success btn-sm" style="font-weight: 700;">
+            📝 Take Assessment Quiz
+          </a>
+        </div>
+
+        <!-- Lesson Text Content Body (Rendered via markdown) -->
+        <div id="lessonContentBody" class="lesson-content-body markdown-rendered">
+          <p>Please select a lesson from the sidebar to start reading.</p>
+        </div>
+
+        <!-- Code Snippet Box (if any) -->
+        <div id="codeSnippetContainer" style="display: none; margin-top: 24px;">
+          <h4 style="font-size: 15px; font-weight: 700; color: var(--text-main); margin-bottom: 8px;">Interactive Code Example</h4>
+          <div id="codeSnippetBox"></div>
+        </div>
+
+        <!-- Bottom Action Bar: Ask AI Tutor + Prev/Next Buttons -->
+        <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+          <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+            <a id="askTutorAboutLessonBtn" href="/tutor.html" class="btn btn-ai btn-sm" title="Ask AI tutor to explain this lesson's concepts">
+              <span>🤖</span> Ask AI Tutor
+            </a>
+            <button id="summarizeLessonBtn" class="btn btn-outline btn-sm" style="color: var(--accent-ai); border-color: #c7d2fe;">
+              <span>⚡</span> AI Lecture Summary
+            </button>
+          </div>
+
+          <div style="display: flex; gap: 8px;">
+            <button id="prevLessonBtn" class="btn btn-outline btn-sm">&larr; Previous</button>
+            <button id="nextLessonBtn" class="btn btn-primary btn-sm">Next Lesson &rarr;</button>
+          </div>
+        </div>
+
+        <!-- AI Lecture Summary Drawer / Modal Area -->
+        <div id="aiSummaryBox" style="display: none; margin-top: 24px; padding: 20px; background: #faf5ff; border: 1px solid #e9d5ff; border-radius: 8px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+            <h3 style="font-size: 15px; font-weight: 700; color: #6b21a8; display: flex; align-items: center; gap: 6px;">
+              <span>✨</span> Gemini High-Yield Key Takeaways
+            </h3>
+            <button id="closeSummaryBtn" class="btn btn-outline btn-sm" style="font-size: 11px; padding: 2px 6px;">Close</button>
+          </div>
+          <div id="aiSummaryContent" class="markdown-rendered" style="font-size: 13px; line-height: 1.6;"></div>
+        </div>
+
+      </section>
+
+    </div>
+
+    <!-- Course Announcements Section -->
+    <div id="courseAnnouncementsSection" style="margin-top: 30px; display: none;">
+      <div class="card" style="padding: 20px; border-left: 4px solid var(--primary); background: #f8fafc;">
+        <h3 style="font-size: 16px; font-weight: 700; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+          <span>📢</span> Instructor Announcements
+        </h3>
+        <div id="announcementsList"></div>
+      </div>
+    </div>
+
+    <!-- Course Discussion Forum & Q&A Section (FR-D1 to FR-D3) -->
+    <section class="card" style="margin-top: 30px; padding: 24px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
+        <div>
+          <h3 style="font-size: 18px; font-weight: 700; display: flex; align-items: center; gap: 8px;">
+            <span>💬</span> Course Discussion &amp; Peer Q&amp;A
+          </h3>
+          <p style="font-size: 13px; color: var(--text-muted); margin: 0;">Collaborate with peers, ask questions on tough bugs, and share solutions.</p>
+        </div>
+        <button id="toggleNewPostBtn" class="btn btn-primary btn-sm">+ Ask Question</button>
+      </div>
+
+      <!-- New Discussion Post Form -->
+      <div id="newDiscussionFormCard" style="display: none; background: #f8fafc; border: 1px solid var(--border-color); border-radius: 8px; padding: 16px; margin-bottom: 20px;">
+        <h4 style="font-size: 14px; font-weight: 700; margin-bottom: 10px;">Post a Question or Discussion Topic</h4>
+        <form id="newDiscussionForm">
+          <div class="form-group" style="margin-bottom: 10px;">
+            <input type="text" id="postTitle" class="form-control" placeholder="Brief question summary (e.g. Why does flex-wrap behave this way?)" required>
+          </div>
+          <div class="form-group" style="margin-bottom: 12px;">
+            <textarea id="postContent" class="form-control" rows="3" placeholder="Elaborate on your question or post relevant code snippets..." required></textarea>
+          </div>
+          <div style="display: flex; justify-content: flex-end; gap: 8px;">
+            <button type="button" id="cancelPostBtn" class="btn btn-outline btn-sm">Cancel</button>
+            <button type="submit" id="submitPostBtn" class="btn btn-primary btn-sm">Post to Forum</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Discussions Threads Container -->
+      <div id="discussionsContainer">
+        <div style="text-align: center; padding: 20px; color: var(--text-muted); font-size: 13px;">Loading discussion threads...</div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <p>VertexLearn AI &copy; 2026 &mdash; Built with HTML, CSS, JavaScript, Express &amp; MongoDB</p>
+    </div>
+  </footer>
+
+  <script src="/js/auth.js"></script>
+  <script src="/js/markdown.js"></script>
+  <script src="/js/main.js"></script>
+  <script>
+    // Course Viewer Controller
+    let currentCourse = null;
+    let completedLessonIds = new Set();
+    let currentLessonIndex = 0;
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const courseId = urlParams.get('id');
+
+      if (!courseId) {
+        window.location.href = '/courses.html';
+        return;
+      }
+
+      await loadCourseAndProgress(courseId);
+      setupKeyboardNavigation();
+    });
+
+    async function loadCourseAndProgress(courseId) {
+      try {
+        // Fetch course details
+        const courseRes = await fetch(`/api/courses/${courseId}`);
+        if (!courseRes.ok) {
+          throw new Error(`Course "${courseId}" could not be found.`);
+        }
+        currentCourse = await courseRes.json();
+
+        // Update header metadata
+        document.getElementById('courseTitleHeader').textContent = currentCourse.title;
+        document.title = `${currentCourse.title} - VertexLearn AI`;
+        
+        const levelBadge = document.getElementById('courseLevelBadge');
+        if (levelBadge) {
+          levelBadge.textContent = currentCourse.level || 'Beginner';
+        }
+
+        const counterBadge = document.getElementById('lessonCounterBadge');
+        if (counterBadge && currentCourse.lessons) {
+          counterBadge.textContent = `${currentCourse.lessons.length} ${currentCourse.lessons.length === 1 ? 'lesson' : 'lessons'}`;
+        }
+
+        // Add Quiz button in top bar
+        document.getElementById('courseQuizLink').innerHTML = `
+          <a href="/quiz.html?courseId=${currentCourse.id}" class="btn btn-outline btn-sm">
+            📝 Take Course Quiz
+          </a>
+        `;
+
+        const finalQuizBtn = document.getElementById('takeFinalQuizBtn');
+        if (finalQuizBtn) {
+          finalQuizBtn.href = `/quiz.html?courseId=${currentCourse.id}`;
+        }
+
+        // Fetch user progress for this course
+        await fetchUserProgress();
+
+        // Check if a specific lesson is requested via hash (#lesson-id)
+        let initialIndex = 0;
+        const hash = window.location.hash.replace('#', '');
+        if (hash && currentCourse.lessons) {
+          const matchedIdx = currentCourse.lessons.findIndex(l => l.id === hash);
+          if (matchedIdx !== -1) initialIndex = matchedIdx;
+        }
+
+        renderLessonSidebar();
+        renderLesson(initialIndex);
+        updateProgressUI();
+        renderAnnouncements(currentCourse.announcements);
+        await loadDiscussions(currentCourse.id);
+        setupDiscussionListeners();
+        setupSummarizerListener();
+
+      } catch (err) {
+        console.error('Error loading course:', err);
+        showAlert('courseAlert', err.message, 'danger');
+      }
+    }
+
+    async function fetchUserProgress() {
+      try {
+        const progRes = await authFetch(`/api/progress/${currentCourse.id}`);
+        if (progRes.ok) {
+          const prog = await progRes.json();
+          if (prog && Array.isArray(prog.completedLessons)) {
+            completedLessonIds = new Set(prog.completedLessons);
+          }
+        }
+      } catch (e) {
+        // Unauthenticated or network error - use localStorage fallback
+        const localKey = `vertexlearn_progress_${currentCourse.id}`;
+        const cached = localStorage.getItem(localKey);
+        if (cached) {
+          try {
+            completedLessonIds = new Set(JSON.parse(cached));
+          } catch (_) {}
+        }
+      }
+    }
+
+    function renderLessonSidebar() {
+      const listEl = document.getElementById('lessonList');
+      if (!listEl || !currentCourse || !currentCourse.lessons) return;
+
+      listEl.innerHTML = currentCourse.lessons.map((lesson, idx) => {
+        const isDone = completedLessonIds.has(lesson.id);
+        const isActive = idx === currentLessonIndex;
+        return `
+          <li class="lesson-item ${isActive ? 'active' : ''} ${isDone ? 'completed' : ''}" data-index="${idx}" title="${escapeHtml(lesson.title)}">
+            <div style="display: flex; align-items: center; gap: 8px; overflow: hidden;">
+              <span style="font-size: 14px;">${isDone ? '✅' : '📄'}</span>
+              <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                ${idx + 1}. ${escapeHtml(lesson.title)}
+              </span>
+            </div>
+            ${isDone ? '<span class="badge badge-success" style="font-size: 10px; padding: 2px 6px;">Done</span>' : ''}
+          </li>
+        `;
+      }).join('');
+
+      // Click listeners
+      listEl.querySelectorAll('.lesson-item').forEach(el => {
+        el.addEventListener('click', () => {
+          const idx = parseInt(el.getAttribute('data-index'), 10);
+          renderLesson(idx);
+        });
+      });
+    }
+
+    function renderLesson(index) {
+      if (!currentCourse || !currentCourse.lessons || !currentCourse.lessons[index]) return;
+      currentLessonIndex = index;
+
+      const lesson = currentCourse.lessons[index];
+      const isDone = completedLessonIds.has(lesson.id);
+
+      // Update URL hash for bookmarking
+      window.history.replaceState(null, '', `#${lesson.id}`);
+
+      // Highlight sidebar active item
+      const items = document.querySelectorAll('.lesson-item');
+      items.forEach((it, idx) => {
+        it.classList.toggle('active', idx === index);
+      });
+
+      // Update Title, Badges & Duration
+      document.getElementById('currentLessonTitle').textContent = `${index + 1}. ${lesson.title}`;
+      document.getElementById('lessonCategoryBadge').textContent = currentCourse.categoryLabel || currentCourse.category || 'Curriculum';
+      
+      const durationBadge = document.getElementById('lessonDurationBadge');
+      if (durationBadge) {
+        durationBadge.textContent = `⏱ ${lesson.duration || '20 min read'}`;
+      }
+
+      // Render Lesson Markdown Body
+      const bodyEl = document.getElementById('lessonContentBody');
+      bodyEl.className = 'lesson-content-body markdown-rendered';
+      bodyEl.innerHTML = renderMarkdown(lesson.content);
+
+      // Render Code Snippet Container if lesson has additional snippet
+      const snippetBoxContainer = document.getElementById('codeSnippetContainer');
+      const snippetBox = document.getElementById('codeSnippetBox');
+      if (lesson.codeSnippet && lesson.codeSnippet.trim() !== '') {
+        snippetBoxContainer.style.display = 'block';
+        snippetBox.innerHTML = renderMarkdown('```javascript\n' + lesson.codeSnippet.trim() + '\n```');
+      } else {
+        snippetBoxContainer.style.display = 'none';
+      }
+
+      // Update Mark Completed Button
+      updateMarkButtonState(isDone);
+
+      // Update AI Tutor query link with contextual prompt
+      const tutorBtn = document.getElementById('askTutorAboutLessonBtn');
+      if (tutorBtn) {
+        const query = `Can you explain the key concepts of "${lesson.title}" from the course "${currentCourse.title}" with a practical example?`;
+        tutorBtn.href = `/tutor.html?question=${encodeURIComponent(query)}`;
+      }
+
+      // Update Previous / Next Buttons
+      document.getElementById('prevLessonBtn').disabled = index === 0;
+      const nextBtn = document.getElementById('nextLessonBtn');
+      if (index === currentCourse.lessons.length - 1) {
+        nextBtn.textContent = 'Finish Course 🎉';
+      } else {
+        nextBtn.innerHTML = 'Next Lesson &rarr;';
+      }
+
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function updateMarkButtonState(isDone) {
+      const markBtn = document.getElementById('markCompletedBtn');
+      if (isDone) {
+        markBtn.className = 'btn btn-success';
+        markBtn.innerHTML = '<span>✅</span> Completed';
+      } else {
+        markBtn.className = 'btn btn-outline';
+        markBtn.innerHTML = '<span>⭕</span> Mark as Completed';
+      }
+    }
+
+    function updateProgressUI() {
+      if (!currentCourse || !currentCourse.lessons) return;
+      const total = currentCourse.lessons.length;
+      const completed = completedLessonIds.size;
+      const pct = total > 0 ? Math.round((completed / total) * 100) : 0;
+
+      const pctEl = document.getElementById('courseProgressPercent');
+      const barEl = document.getElementById('courseProgressBar');
+      const banner = document.getElementById('courseCompletionBanner');
+
+      if (pctEl) pctEl.textContent = `${pct}% (${completed}/${total})`;
+      if (barEl) {
+        barEl.style.width = `${pct}%`;
+        if (pct === 100) {
+          barEl.classList.add('success');
+        } else {
+          barEl.classList.remove('success');
+        }
+      }
+
+      if (banner) {
+        banner.style.display = pct === 100 ? 'flex' : 'none';
+      }
+    }
+
+    async function handleCompleteLesson() {
+      if (!currentCourse || !currentCourse.lessons[currentLessonIndex]) return;
+      const lesson = currentCourse.lessons[currentLessonIndex];
+      const isAlreadyDone = completedLessonIds.has(lesson.id);
+
+      if (isAlreadyDone) {
+        showAlert('courseAlert', 'You have already completed this lesson!', 'info');
+        return;
+      }
+
+      const markBtn = document.getElementById('markCompletedBtn');
+      markBtn.disabled = true;
+      markBtn.innerHTML = '<span>⏳</span> Saving...';
+
+      // Local storage persistence
+      completedLessonIds.add(lesson.id);
+      const localKey = `vertexlearn_progress_${currentCourse.id}`;
+      localStorage.setItem(localKey, JSON.stringify(Array.from(completedLessonIds)));
+
+      try {
+        const res = await authFetch(`/api/courses/${currentCourse.id}/complete-lesson`, {
+          method: 'POST',
+          body: JSON.stringify({ lessonId: lesson.id })
+        });
+
+        const data = await res.json();
+        if (res.ok && data.percentage !== undefined) {
+          showAlert('courseAlert', `Lesson marked as completed! Overall Course Progress: ${data.percentage}%`, 'success');
+        } else {
+          showAlert('courseAlert', 'Lesson progress saved locally!', 'success');
+        }
+      } catch (err) {
+        // Saved locally
+        showAlert('courseAlert', 'Progress saved to your browser session!', 'success');
+      } finally {
+        markBtn.disabled = false;
+        updateMarkButtonState(true);
+        renderLessonSidebar();
+        updateProgressUI();
+      }
+    }
+
+    // Event listener: Mark Lesson as Completed
+    document.getElementById('markCompletedBtn').addEventListener('click', handleCompleteLesson);
+
+    // Event listener: Prev / Next buttons
+    document.getElementById('prevLessonBtn').addEventListener('click', () => {
+      if (currentLessonIndex > 0) {
+        renderLesson(currentLessonIndex - 1);
+      }
+    });
+
+    document.getElementById('nextLessonBtn').addEventListener('click', () => {
+      if (currentCourse && currentLessonIndex < currentCourse.lessons.length - 1) {
+        renderLesson(currentLessonIndex + 1);
+      } else if (currentCourse && currentLessonIndex === currentCourse.lessons.length - 1) {
+        // At the last lesson, if finished navigate to quiz
+        window.location.href = `/quiz.html?courseId=${currentCourse.id}`;
+      }
+    });
+
+    // Keyboard navigation helper
+    function setupKeyboardNavigation() {
+      document.addEventListener('keydown', (e) => {
+        // Do not trigger if typing in an input or textarea
+        if (['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) return;
+
+        if (e.key === 'ArrowRight') {
+          if (currentCourse && currentLessonIndex < currentCourse.lessons.length - 1) {
+            renderLesson(currentLessonIndex + 1);
+          }
+        } else if (e.key === 'ArrowLeft') {
+          if (currentLessonIndex > 0) {
+            renderLesson(currentLessonIndex - 1);
+          }
+        } else if (e.key.toLowerCase() === 'c') {
+          handleCompleteLesson();
+        }
+      });
+    }
+
+    // Render announcements banner
+    function renderAnnouncements(announcements) {
+      const section = document.getElementById('courseAnnouncementsSection');
+      const list = document.getElementById('announcementsList');
+      if (!section || !list) return;
+
+      if (Array.isArray(announcements) && announcements.length > 0) {
+        section.style.display = 'block';
+        list.innerHTML = announcements.map(a => `
+          <div style="margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid var(--border-color);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+              <strong style="color: var(--text-main); font-size: 14px;">${escapeHtml(a.title)}</strong>
+              <span style="font-size: 11px; color: var(--text-muted);">${new Date(a.createdAt).toLocaleDateString()}</span>
+            </div>
+            <p style="font-size: 13px; color: var(--text-muted); margin: 0; line-height: 1.5;">${escapeHtml(a.content)}</p>
+          </div>
+        `).join('');
+      } else {
+        section.style.display = 'none';
+      }
+    }
+
+    // AI Lecture Summarizer Listener
+    function setupSummarizerListener() {
+      const summarizeBtn = document.getElementById('summarizeLessonBtn');
+      const summaryBox = document.getElementById('aiSummaryBox');
+      const summaryContent = document.getElementById('aiSummaryContent');
+      const closeBtn = document.getElementById('closeSummaryBtn');
+
+      if (!summarizeBtn || !summaryBox || !summaryContent) return;
+
+      closeBtn.addEventListener('click', () => {
+        summaryBox.style.display = 'none';
+      });
+
+      summarizeBtn.addEventListener('click', async () => {
+        if (!currentCourse || !currentCourse.lessons[currentLessonIndex]) return;
+        const lesson = currentCourse.lessons[currentLessonIndex];
+
+        summaryBox.style.display = 'block';
+        summaryContent.innerHTML = '<div style="color: var(--accent-ai); font-weight: 600;">✨ Synthesizing key takeaways and exam flashcard pairs with Gemini 3.8 Flash...</div>';
+
+        try {
+          const res = await fetch('/api/ai/lectures/summarize', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              lectureTitle: lesson.title,
+              content: lesson.content,
+              courseTitle: currentCourse.title
+            })
+          });
+          const data = await res.json();
+          if (data.success && data.summary) {
+            summaryContent.innerHTML = renderMarkdown(data.summary);
+          } else {
+            summaryContent.innerHTML = '<div style="color: var(--danger);">Failed to generate summary. Please try again.</div>';
+          }
+        } catch (err) {
+          summaryContent.innerHTML = `<div style="color: var(--danger);">Summary service error: ${escapeHtml(err.message)}</div>`;
+        }
+      });
+    }
+
+    // Load and Render Discussions Forum
+    async function loadDiscussions(courseId) {
+      const container = document.getElementById('discussionsContainer');
+      if (!container) return;
+
+      try {
+        const res = await fetch(`/api/courses/${encodeURIComponent(courseId)}/discussions`);
+        const data = await res.json();
+        const threads = data.discussions || [];
+
+        if (!threads.length) {
+          container.innerHTML = '<div style="text-align: center; padding: 24px; color: var(--text-muted); font-size: 13px;">No questions posted yet. Be the first to start a conversation!</div>';
+          return;
+        }
+
+        container.innerHTML = threads.map(t => `
+          <div class="discussion-card" style="background: #ffffff; border: 1px solid var(--border-color); border-radius: 8px; padding: 16px; margin-bottom: 14px;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 6px;">
+              <h4 style="font-size: 15px; font-weight: 700; color: var(--text-main); margin: 0;">${escapeHtml(t.title)}</h4>
+              <span style="font-size: 11px; color: var(--text-muted);">${new Date(t.createdAt).toLocaleDateString()}</span>
+            </div>
+            <p style="font-size: 13px; color: var(--text-muted); line-height: 1.5; margin-bottom: 10px;">${escapeHtml(t.content)}</p>
+            <div style="display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: var(--text-muted); border-top: 1px solid #f1f5f9; padding-top: 8px;">
+              <span>👤 Posted by <strong>${escapeHtml(t.authorName || 'Student')}</strong></span>
+              <div style="display: flex; gap: 10px; align-items: center;">
+                <button class="btn btn-outline btn-sm reply-toggle-btn" data-thread-id="${t.id}" style="font-size: 11px; padding: 2px 8px;">
+                  💬 Replies (${t.replies ? t.replies.length : 0})
+                </button>
+              </div>
+            </div>
+            
+            <!-- Replies Area -->
+            <div id="replies-${t.id}" style="display: none; margin-top: 12px; padding-top: 12px; border-top: 1px dashed var(--border-color);">
+              <div class="replies-list" style="margin-bottom: 12px;">
+                ${(t.replies || []).map(r => `
+                  <div style="background: #f8fafc; padding: 8px 12px; border-radius: 6px; margin-bottom: 6px; font-size: 12px;">
+                    <div style="display: flex; justify-content: space-between; font-weight: 600; color: var(--text-main); margin-bottom: 2px;">
+                      <span>${escapeHtml(r.authorName || 'Peer')}</span>
+                      <span style="font-size: 10px; color: var(--text-muted);">${new Date(r.createdAt).toLocaleDateString()}</span>
+                    </div>
+                    <div style="color: var(--text-muted); line-height: 1.4;">${escapeHtml(r.content)}</div>
+                  </div>
+                `).join('')}
+              </div>
+              <!-- Reply Form -->
+              <form class="reply-form" data-thread-id="${t.id}" style="display: flex; gap: 8px;">
+                <input type="text" class="form-control reply-input" placeholder="Write a constructive answer or solution..." style="font-size: 12px;" required>
+                <button type="submit" class="btn btn-primary btn-sm" style="font-size: 11px; white-space: nowrap;">Reply</button>
+              </form>
+            </div>
+          </div>
+        `).join('');
+
+        // Wire toggle replies
+        container.querySelectorAll('.reply-toggle-btn').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const threadId = btn.getAttribute('data-thread-id');
+            const repliesDiv = document.getElementById(`replies-${threadId}`);
+            if (repliesDiv) {
+              repliesDiv.style.display = repliesDiv.style.display === 'none' ? 'block' : 'none';
+            }
+          });
+        });
+
+        // Wire submit reply
+        container.querySelectorAll('.reply-form').forEach(form => {
+          form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const threadId = form.getAttribute('data-thread-id');
+            const input = form.querySelector('.reply-input');
+            const content = input.value.trim();
+            if (!content) return;
+
+            try {
+              const res = await authFetch(`/api/courses/${encodeURIComponent(currentCourse.id)}/discussions/${encodeURIComponent(threadId)}/replies`, {
+                method: 'POST',
+                body: JSON.stringify({ content })
+              });
+              if (res.ok) {
+                input.value = '';
+                await loadDiscussions(currentCourse.id);
+                // Keep open
+                const repliesDiv = document.getElementById(`replies-${threadId}`);
+                if (repliesDiv) repliesDiv.style.display = 'block';
+              } else {
+                showAlert('courseAlert', 'Failed to post reply. Please log in.', 'danger');
+              }
+            } catch (err) {
+              showAlert('courseAlert', 'Error submitting reply.', 'danger');
+            }
+          });
+        });
+
+      } catch (err) {
+        console.error('Error fetching discussions:', err);
+      }
+    }
+
+    function setupDiscussionListeners() {
+      const toggleBtn = document.getElementById('toggleNewPostBtn');
+      const formCard = document.getElementById('newDiscussionFormCard');
+      const cancelBtn = document.getElementById('cancelPostBtn');
+      const form = document.getElementById('newDiscussionForm');
+
+      if (toggleBtn && formCard && cancelBtn) {
+        toggleBtn.addEventListener('click', () => {
+          formCard.style.display = 'block';
+          formCard.scrollIntoView({ behavior: 'smooth' });
+        });
+        cancelBtn.addEventListener('click', () => {
+          formCard.style.display = 'none';
+        });
+      }
+
+      if (form) {
+        form.addEventListener('submit', async (e) => {
+          e.preventDefault();
+          const title = document.getElementById('postTitle').value.trim();
+          const content = document.getElementById('postContent').value.trim();
+          if (!title || !content || !currentCourse) return;
+
+          try {
+            const res = await authFetch(`/api/courses/${encodeURIComponent(currentCourse.id)}/discussions`, {
+              method: 'POST',
+              body: JSON.stringify({
+                title,
+                content,
+                lessonId: currentCourse.lessons[currentLessonIndex] ? currentCourse.lessons[currentLessonIndex].id : undefined
+              })
+            });
+
+            if (res.ok) {
+              form.reset();
+              formCard.style.display = 'none';
+              await loadDiscussions(currentCourse.id);
+              showAlert('courseAlert', 'Your question has been posted to the course forum!', 'success');
+            } else {
+              showAlert('courseAlert', 'Failed to post topic. Please ensure you are logged in.', 'danger');
+            }
+          } catch (err) {
+            showAlert('courseAlert', 'Failed to post to discussion forum.', 'danger');
+          }
+        });
+      }
+    }
+  </script>
+</body>
+</html>
